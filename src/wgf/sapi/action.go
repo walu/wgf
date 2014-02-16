@@ -1,0 +1,80 @@
+package sapi
+
+import (
+	"errors"
+)
+
+const (
+	USE_EXECUTE = 0
+	USE_DOFUNC  = 1
+)
+
+//wgf使用的action-interface
+type ActionInterface interface {
+	SetSapi(p *Sapi)
+
+	UseSpecialMethod() bool
+	Execute() error
+
+	DoGet() error
+	DoPost() error
+}
+
+//存储已注册的action
+var actionMap map[string]func() ActionInterface
+
+//默认action，用于简化app实现逻辑，app在实现自己的action时，可以直接包含此action。
+type Action struct {
+	RunMode int
+	Sapi    *Sapi
+}
+
+//设置sapi实例
+func (p *Action) SetSapi(s *Sapi) {
+	p.Sapi = s
+}
+
+//是否启用专有方法
+func (p *Action) UseSpecialMethod() bool {
+	return p.RunMode == USE_DOFUNC
+}
+
+//如果未启用专有方法，则将所有类型的请求都转到此方法
+func (p *Action) Execute() error {
+	p.Sapi.Print("nonsupport.")
+	return nil
+}
+
+//如果启用了专用方法，且请求类型为GET，则执行此方法
+func (p *Action) DoGet() error {
+	p.Sapi.Print("nonsupport.")
+	return nil
+}
+
+//如果启用了专用方法，且请求类型为POST，则执行此方法
+func (p *Action) DoPost() error {
+	p.Sapi.Print("nonsupport.")
+	return nil
+}
+
+//注册action
+func RegisterAction(name string, creater func() ActionInterface) {
+	actionMap[name] = creater
+}
+
+//获取已注册的action
+func GetAction(name string) (action ActionInterface, err error) {
+	creater, ok := actionMap[name]
+
+	if ok {
+		action = creater()
+	} else {
+		err = errors.New("no action named: " + name)
+	}
+
+	return action, err
+}
+
+func init() {
+	actionMap = make(map[string]func() ActionInterface)
+}
