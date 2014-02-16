@@ -17,23 +17,16 @@ wgf是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一�
 * mvc
 	* 可以查看源码中的app目录，查看基本的mvc使用。
 * plugin
-	* httpparam
-		* 获取http请求中的参数，GET、POST、文件上传等。
-	* session (完善中)
-		* 处理Session问题。
-	* cookie
-		* 获取、设置Cookie。
-	* header
-		* 获取、设置Header信息、重定向请求等。
-	* router
-		* 根据路由规则分发请求、生成URL等。
-	* view
-		* 管理模版文件。
+	* httpparam, 获取http请求中的参数，GET、POST、文件上传等。
+	* session (完善中), 处理Session问题。
+	* cookie, 获取、设置Cookie。
+	* header, 获取、设置Header信息、重定向请求等。
+	* router, 根据路由规则分发请求、生成URL等。
+	* view, 管理模版文件，无重启更新模版。
 
 ## 使用介绍
 
 > 类库文档，大家可以使用godoc。
-> 
 > 这里的介绍是为了说一些快速上手。
 
 * 介绍
