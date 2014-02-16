@@ -31,7 +31,7 @@ wgf是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一�
 
 * 介绍
 	* 第一个Demo
-* 核心组件介绍
+* 核心扩展介绍
 	* httpparam
 		* 获取Get\Post参数。
 		* 处理文件上传。
