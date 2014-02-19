@@ -30,7 +30,7 @@
 > 这里的介绍是为了说一些godoc表达不了的。
 
 * 介绍
-	* 第一个Demo
+	* [入门Demo](<docs/1-1-the-first-demo.md>)
 * 核心扩展介绍
 	* httpparam
 		* 获取Get\Post参数。
