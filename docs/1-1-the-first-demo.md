@@ -43,6 +43,7 @@ import (
 )
 
 type IndexAction struct {
+	sapi.Action
 }
 
 //方法主体
