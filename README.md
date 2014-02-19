@@ -2,7 +2,7 @@
 
 ## 是什么？
 
-wgf是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
+[wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
 
 * 简单易用、方便灵活。
 
@@ -24,7 +24,7 @@ wgf是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一�
 	* router, 根据路由规则分发请求、生成URL等。
 	* view, 管理模版文件，无重启更新模版。
 
-## 使用介绍
+## 使用介绍(整理中)
 
 > 类库文档，大家可以使用godoc。
 > 这里的介绍是为了说一些godoc表达不了的。
