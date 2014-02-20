@@ -2,7 +2,7 @@
 
 
 > * 源码: http://github.com/walu/wgf
-> * 微博：http://weibo.com/walu
+> * 微博: http://weibo.com/walu
 
 ## 是什么？
 
