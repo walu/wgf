@@ -1,8 +1,10 @@
 # Wgf 文档
 
-## 是什么？
 
 > 源码: `http://github.com/walu/wgf`
+> 微博：http://weibo.com/walu
+
+## 是什么？
 
 [wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
 
