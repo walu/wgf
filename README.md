@@ -2,6 +2,8 @@
 
 ## 是什么？
 
+> 源码: `http://github.com/walu/wgf`
+
 [wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
 
 * 简单易用、方便灵活。
