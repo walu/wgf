@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+	<body>
+		<script type="text/javascript">
+			Server = 'ws://127.0.0.1:8080/?r=ws';
+			var websocket = new WebSocket(Server);
+			websocket.onopen = function(){
+				websocket.send("hello world\n")
+			};
+			websocket.onmessage = function(d){console.log(d)};
+			websocket.onerror = function(d){console.log(d)};
+			</script>
+	</body>
+</html>
