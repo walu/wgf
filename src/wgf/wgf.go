@@ -56,6 +56,27 @@ func StartHttpServer() {
 	server.Init(basedir, pConf)
 }
 
+func StartWebSocketServer() {
+	//parse cli params
+	flag.Visit(visitFlags)
+
+	var basedir string
+	basedir = cliArgs["basedir"]
+	if "" == basedir {
+		basedir, _ = os.Getwd()
+	}
+
+	var confFile string
+	var pConf *conf.Conf
+	confFile = basedir + "/conf/wgf.ini"
+	pConf = conf.NewConf()
+	pConf.ParseFile(confFile)
+
+	//load conf file
+	server := &sapi.Server{}
+	server.InitWebSocket(basedir, pConf)
+}
+
 func init() {
 	cliArgs = make(map[string]string)
 }

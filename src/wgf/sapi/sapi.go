@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 
 	"wgf/conf"
+	"wgf/sapi/websocket"
 )
 
 type Sapi struct {
@@ -22,6 +23,7 @@ type Sapi struct {
 	RuntimeConfig conf.Conf
 
 	//by golang http package
+	//不要用这两个属性，不保证兼容性，一旦解决，立马变为不再导出。
 	Res http.ResponseWriter
 	Req *http.Request
 
@@ -152,6 +154,23 @@ func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi 
 	s.Stdout = res
 	s.Stderr = res
 	s.Stdin = req.Body
+
+	return s
+}
+
+func NewWebSocketSapi(pServer *Server, conn *websocket.Conn) *Sapi {
+	s := &Sapi{}
+	s.Name = "websocket"
+	s.FullName = "Wgf websocket Server API"
+	s.plugins = make(map[string]interface{})
+
+	s.server = pServer
+	s.Res = nil
+	s.Req = conn.Request()
+
+	s.Stdout = conn
+	s.Stderr = conn
+	s.Stdin = conn
 
 	return s
 }

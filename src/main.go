@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	wgf.StartHttpServer()
+	//wgf.StartHttpServer()
+	wgf.StartWebSocketServer()
 }

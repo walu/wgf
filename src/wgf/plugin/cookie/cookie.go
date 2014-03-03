@@ -18,7 +18,9 @@ func (p *Cookie) Get(name string) string {
 }
 
 func (p *Cookie) Set(newcookie *http.Cookie) error {
-	http.SetCookie(p.sapi.Res, newcookie)
+	if nil != p.sapi.Res {
+		http.SetCookie(p.sapi.Res, newcookie)
+	}
 	return nil
 }
 
