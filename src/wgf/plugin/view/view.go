@@ -141,6 +141,13 @@ func serverInit(pServer *sapi.Server) error {
 
 	confAutoRefresh = pServer.Conf.Bool("wgf.view.autoRefresh", true)
 
+
+	_, err = os.Stat(dir)
+	if nil != err {
+		pServer.Log(err)
+		return nil
+	}
+
 	err = filepath.Walk(
 		confViewDir,
 		func(path string, info os.FileInfo, err error) error {
