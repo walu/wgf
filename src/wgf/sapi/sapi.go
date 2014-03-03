@@ -141,8 +141,8 @@ func (p *Sapi) pluginRequestShutdown(name string) {
 
 func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi {
 	s := &Sapi{}
-	s.Name = "fcgi"
-	s.FullName = "Wgf FastCgi Server API"
+	s.Name = "http"
+	s.FullName = "Wgf Http Server API"
 	s.plugins = make(map[string]interface{})
 
 	s.server = pServer
