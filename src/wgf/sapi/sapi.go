@@ -74,7 +74,10 @@ func (p *Sapi) Log(log interface{}) {
 }
 
 func (p *Sapi) RequestURI() string {
-	return p.Req.RequestURI
+	if nil == p.Req {
+		return ""
+	}
+	return p.Req.URL.Path
 }
 
 func (p *Sapi) start(c chan int) {
