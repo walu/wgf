@@ -8,7 +8,7 @@
 
 [wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
 
-* 简单易用、方便灵活。
+* 一款支持http、websocket、cli的golang框架。
 
 > **强烈建议大家先浏览一下app目录源码（一个index＋login事例），即可对wgf有个大体的了解。**
 
