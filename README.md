@@ -1,6 +1,5 @@
 # Wgf 文档
 
-
 > * 源码: http://github.com/walu/wgf
 > * 微博: http://weibo.com/walu
 
@@ -8,7 +7,7 @@
 
 [wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的web框架，目前做wgf的目标只有一点：
 
-* 一款支持http、websocket、cli的golang框架。
+* 一款支持http、websocket的编程框架。
 
 > **强烈建议大家先浏览一下app目录源码（一个index＋login事例），即可对wgf有个大体的了解。**
 
