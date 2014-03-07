@@ -15,6 +15,9 @@ import (
 )
 
 type Server struct {
+
+	disabled bool
+
 	Conf *conf.Conf
 
 	//Location
@@ -54,6 +57,10 @@ func (p *Server) LogStderr(log interface{}) {
 }
 
 func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	if p.disabled {
+		http.Error(res, "the server is shutting down", 503)
+		return
+	}
 	if p.currentChildren >= p.maxChildren {
 		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
 		http.Error(res, fmt.Sprintf("currentChildren has reached the max", p.currentChildren), 503)
@@ -142,7 +149,6 @@ func (p *Server) Init(basedir string, pConf *conf.Conf) {
 	httpServer.Serve(p.listener)
 
 	//server shutdown
-	//因为httpServer无法接收信号退出，导致这个地方无法执行。。。想办法中。。
 	for i := len(pluginOrders) - 1; i >= 0; i-- {
 		p.pluginServerShutdown(pluginOrders[i])
 	}
@@ -236,6 +242,8 @@ func (p *Server) pluginServerShutdown(name string) {
 }
 
 //处理退出、info信号
+//使用SIG_INT来阻止新请求，等待旧请求处理完成后再正式退出。
+//使用SIG_KILL来粗暴的直接停掉进程
 func (p *Server) handleControlSignal() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGUSR1)
@@ -244,9 +252,13 @@ func (p *Server) handleControlSignal() {
 		s := <-c
 		switch s {
 		case syscall.SIGINT:
+			p.disabled = true
+			for p.currentChildren > 0 {
+				p.Log(fmt.Sprintf("wait for currentChildren stop, remains %d", p.currentChildren))
+				time.Sleep(1*time.Second)
+			}
 			p.listener.Close()
 			return
 		}
 	}
-
 }
