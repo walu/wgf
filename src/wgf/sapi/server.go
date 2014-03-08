@@ -79,6 +79,12 @@ func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func (p *Server) ServeWebSocket(conn *websocket.Conn) {
+
+	if p.disabled {
+		http.Error(res, "the server is shutting down", 503)
+		return
+	}
+
 	if p.currentChildren >= p.maxChildren {
 		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
 		//http.Error(conn, fmt.Sprintf("currentChildren has reached the max", p.currentChildren), 503)
