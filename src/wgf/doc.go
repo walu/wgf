@@ -1,7 +1,7 @@
 /*
 Wgf
 
-wgf是一个基于golang的web编程框架，目前支持fastcgi协议。
+wgf是一款支持http、websocket的编程框架。
 
 */
 package wgf
