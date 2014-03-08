@@ -1,20 +1,7 @@
-//package log provides functionality for record logs
-/*
-建议的使用方式
-app/log/manager.go
-	import "log"
-	var CoreLog *log.Logger
-	var LoginLog *log.Logger
-	var PublishLog *log.Logger
+//Copyright 2014 walu
+//Use of this source code is governed by a MIT
+//license that can be found in the LICENSE file.
 
-app/action/IndexAction.go
-	import "app/log"
-
-	func Execute() {
-		log.CoreLog.Info("......")
-		log.PublishLog.Warning("......")
-	}
-*/
 package log
 
 import (
@@ -31,19 +18,13 @@ const (
 	LEVEL_FATAL int	= 4
 )
 
-//生成Logger实例时使用的参数
-var ConfTimeLayout string = time.RFC3339
-var ConfTimeLocationName string = "Asia/Shanghai"
-var ConfLogWriter io.Writer //默认为os.Stdout
-var ConfMinLogLevel = 2
+var (
+	ConfTimeLayout string = time.RFC3339
+	ConfTimeLocationName string = "Asia/Shanghai"
+	ConfLogWriter io.Writer //默认为os.Stdout
+	ConfMinLogLevel = 2
+)
 
-/*
-默认的logger
-log.Default.Info("user 10093 login with invalid token")
-*/
-var Default *Logger
-
-//Logger
 type Logger struct {
 	timeLayout string
 	timeLocation *time.Location
@@ -68,6 +49,7 @@ func (l *Logger) SetLogWriter(logWriter io.Writer) {
 	l.logWriter = logWriter
 }
 
+//设置时区，参数错误则使用Asia/Shanghai
 func (l *Logger) SetTimeLocation(name string) {
 	var err error
 	if l.timeLocation, err = time.LoadLocation(name); nil!=err {
@@ -78,6 +60,10 @@ func (l *Logger) SetTimeLocation(name string) {
 
 func (l *Logger) SetTimeLayout(layout string) {
 	l.timeLayout = layout
+}
+
+func (l Logger) LogWriter() io.Writer {
+	return l.LogWriter
 }
 
 func (l Logger) Debug(v ...interface{}) {
@@ -166,6 +152,5 @@ func (l Logger) outputf(level string, format string, v ...interface{}) {
 
 func init() {
 	ConfLogWriter = os.Stdout
-	Default = NewLogger()
 }
 
