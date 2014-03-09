@@ -12,8 +12,6 @@ import (
 //server-bootstrap操作
 //执行一些server级配置与初始化操作
 func appServerInit(pServer *sapi.Server) error {
-
-	//view.SetViewDir("/Users/walu/webroot/wiki-public/view/")
 	//database init
 	//other service init
 	return nil
