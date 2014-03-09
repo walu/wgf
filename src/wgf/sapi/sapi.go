@@ -14,6 +14,7 @@ import (
 
 type Sapi struct {
 	server *Server
+	closed bool
 
 	//Description
 	Name     string
@@ -57,6 +58,14 @@ func (p *Sapi) SetActionName(name string) {
 func (p *Sapi) ExitRequest() {
 	p.requestChannel <- 1
 	runtime.Goexit()
+}
+
+func (p *Sapi) Close() {
+	p.closed = true
+}
+
+func (p *Sapi) IsClosed() bool {
+	return p.closed
 }
 
 //输出内容给客户端，第一次输出之前会先输出header信息
@@ -151,6 +160,7 @@ func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi 
 	s.plugins = make(map[string]interface{})
 
 	s.server = pServer
+	s.Logger = pServer.Logger
 	s.Res = res
 	s.Req = req
 

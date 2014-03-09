@@ -72,7 +72,11 @@ func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	sapi := NewSapi(p, res, req)
 	c := make(chan int)
 	go sapi.start(c)
-	<-c //blocked here, wait for process finished
+	select {
+		case <-c ://request has been finishied
+		case <-res.(http.CloseNotifier).CloseNotify(): //client disconnected
+			sapi.Close()
+	}
 }
 
 func (p *Server) ServeWebSocket(conn *websocket.Conn) {
@@ -204,7 +208,11 @@ func (p *Server) handleControlSignal() {
 		case syscall.SIGINT:
 			p.disabled = true
 			for p.currentChildren > 0 {
-				p.Logger.Infof("wait for currentChildren stop, remains %d", p.currentChildren)
+				p.Logger.Infof(
+					"wait for currentChildren stop, remains %d. use [ kill -9 %d ] if you want to kill it at once.", 
+					p.currentChildren,
+					os.Getpid(),
+				)
 				time.Sleep(1*time.Second)
 			}
 			p.listener.Close()
