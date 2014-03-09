@@ -178,6 +178,7 @@ func NewWebSocketSapi(pServer *Server, conn *websocket.Conn) *Sapi {
 	s.plugins = make(map[string]interface{})
 
 	s.server = pServer
+	s.Logger = pServer.Logger
 	s.Res = nil
 	s.Req = conn.Request()
 
