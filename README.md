@@ -15,6 +15,20 @@
 
 灵活的扩展机制是Wgf的一大特点，借鉴了php的设计理念，简化新功能的增添，保持核心结构与整体理念的稳定。
 
+## 架构设计[Package的依赖关系]
+
+Package dependencies(自上至下):
+
+* app
+	* action
+	* model
+* wgf
+	* plugin
+	* sapi
+	* lib
+
+上层依赖下层，下层不依赖上层。
+
 ## 支持的功能
 
 * mvc
