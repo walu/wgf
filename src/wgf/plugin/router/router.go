@@ -54,7 +54,7 @@ func serverInit(pServer *sapi.Server) error {
 	for key, val := range confRouter.Data() {
 		err = addRule(key, val)
 		if nil != err {
-			pServer.Log(fmt.Sprintf("router error when addRule, %s=%s, errors: %s", key, val, err.Error()))
+			pServer.Logger.Warningf("router error when addRule, %s=%s, errors: %s", key, val, err.Error())
 		}
 	}
 	return nil

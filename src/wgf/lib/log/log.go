@@ -21,7 +21,7 @@ const (
 var (
 	ConfTimeLayout string = time.RFC3339
 	ConfTimeLocationName string = "Asia/Shanghai"
-	ConfLogWriter io.Writer //默认为os.Stdout
+	ConfLogWriter io.Writer = os.Stdout
 	ConfMinLogLevel = 2
 )
 

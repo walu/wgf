@@ -41,14 +41,14 @@ func (v *View) Assign(key string, val interface{}) {
 func (v *View) Display(viewName string) error {
 	tpl, err := getTemplate(viewName)
 	if nil != err {
-		v.sapi.Log(err)
+		v.sapi.Logger.Warning(err)
 		return err
 	}
 
 	v.Assign("_wgf_view_stdoutWriter", v.sapi.Stdout)
 	err = tpl.Execute(v.sapi.Stdout, v.data)
 	if nil != err {
-		v.sapi.Log(err)
+		v.sapi.Logger.Warning(err)
 	}
 	return err
 }
@@ -144,7 +144,7 @@ func serverInit(pServer *sapi.Server) error {
 
 	_, err = os.Stat(dir)
 	if nil != err {
-		pServer.Log(err)
+		pServer.Logger.Warning(err)
 		return nil
 	}
 
@@ -159,7 +159,7 @@ func serverInit(pServer *sapi.Server) error {
 	)
 
 	if nil != err {
-		pServer.Log(err)
+		pServer.Logger.Warning(err)
 	}
 	return err
 }

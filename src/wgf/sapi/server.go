@@ -10,8 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"wgf/lib/conf"
+
 	"wgf/sapi/websocket"
+	"wgf/lib/conf"
+	"wgf/lib/log"
 )
 
 type Server struct {
@@ -20,11 +22,8 @@ type Server struct {
 
 	Conf *conf.Conf
 
-	//Location
-	Location *time.Location
-
-	//log writer
-	LogWriter io.Writer
+	Logger *log.Logger
+	LoggerStdout *log.Logger
 
 	basedir         string
 	maxChildren     int64
@@ -38,22 +37,20 @@ type Server struct {
 	//for terminal server
 }
 
+func NewServer() *Server {
+	p := &Server{}
+	p.Logger = log.NewLogger()
+	p.LogStdout = log.NewLogger()
+	p.LogStdout.SetLogWriter(os.Stdout)
+	return p
+}
+
 func (p *Server) Basedir() string {
 	return p.basedir
 }
 
 func (p *Server) Confdir() string {
 	return p.basedir + "/conf/"
-}
-
-func (p *Server) Log(log interface{}) {
-	logTime := time.Now().In(p.Location).Format(time.RFC3339)
-	fmt.Fprintf(p.LogWriter, fmt.Sprintf("%s %s\n", logTime, log))
-}
-
-func (p *Server) LogStderr(log interface{}) {
-	logTime := time.Now().In(p.Location).Format(time.RFC3339)
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("%s %s\n", logTime, log))
 }
 
 func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
@@ -63,8 +60,8 @@ func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 	if p.currentChildren >= p.maxChildren {
 		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
-		http.Error(res, fmt.Sprintf("currentChildren has reached the max", p.currentChildren), 503)
-		p.Log(errorMsg)
+		http.Error(res, errorMsg, 503)
+		p.Logger.Warning(errorMsg)
 		return
 	}
 
@@ -87,8 +84,7 @@ func (p *Server) ServeWebSocket(conn *websocket.Conn) {
 
 	if p.currentChildren >= p.maxChildren {
 		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
-		//http.Error(conn, fmt.Sprintf("currentChildren has reached the max", p.currentChildren), 503)
-		p.Log(errorMsg)
+		p.Logger.Warning(errorMsg)
 		return
 	}
 
@@ -103,40 +99,45 @@ func (p *Server) ServeWebSocket(conn *websocket.Conn) {
 }
 
 
-func (p *Server) Init(basedir string, pConf *conf.Conf) {
+
+func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
 	p.basedir = basedir
 	p.Conf = pConf
 	p.maxChildren = p.Conf.Int64("wgf.sapi.maxChildren", 1000)
 
+	var logWriter io.Writer
 	var logFile string
 	var err error
+
+	logFile = p.Conf.String("wgf.sapi.logFile", "")
+	if "" == logFile {
+		logWriter = os.Stderr
+		logFile = "stdout"
+	} else {
+		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		if nil != err {
+			logWriter = os.Stderr
+			p.LoggerStdout.Warningf("cannot open log file for write, error: %s, use stdout instead.", err.Error())
+			logFile = "stdout"
+		}
+	}
+	p.Logger.SetLogWriter(logWriter)
 
 	timezone := p.Conf.String("wgf.sapi.timezone", "Asia/Shanghai")
 	p.Location, err = time.LoadLocation(timezone)
 	if nil != err {
-		p.Log(err)
-	}
-
-	logFile = p.Conf.String("wgf.sapi.logFile", "")
-	if "" == logFile {
-		p.LogWriter = os.Stderr
-		logFile = "stderr"
+		p.Logger.Warning(err.Error())
 	} else {
-		p.LogWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
-		if nil != err {
-			p.LogWriter = os.Stderr
-			p.Log("can't open log file " + logFile)
-			logFile = "stderr"
-		}
+		p.Logger.SetTimeLocation(timezone)
+		p.LoggerStdout.SetTimeLocation(timezone)
+		log.ConfTimeLocationName = timezone
 	}
-
-	p.LogStderr("log will be writed into " + logFile)
 
 	var tcpListen string
 	tcpListen = p.Conf.String("wgf.sapi.tcpListen", "")
 	p.listener, err = net.Listen("tcp", tcpListen)
 	if nil != err {
-		p.Log("cannot listen to " + tcpListen)
+		p.Logger.Fatalf("cannot listen to %s, error: %s", tcpListen, err.Error())
 		return //exit
 	}
 
@@ -149,9 +150,8 @@ func (p *Server) Init(basedir string, pConf *conf.Conf) {
 		p.pluginServerInit(name)
 	}
 
-	//改到http server试试
 	httpServer := &http.Server{}
-	httpServer.Handler = p
+	httpServer.Handler = handler
 	httpServer.Serve(p.listener)
 
 	//server shutdown
@@ -159,72 +159,21 @@ func (p *Server) Init(basedir string, pConf *conf.Conf) {
 		p.pluginServerShutdown(pluginOrders[i])
 	}
 
-	p.Log("server shutdown\n")
+	p.Logger.Info("server shutdown\n")
+}
 
+
+
+func (p *Server) Init(basedir string, pConf *conf.Conf) {
+	p.boot(basedir, pConf, p)
 }
 
 func (p *Server) InitWebSocket(basedir string, pConf *conf.Conf) {
-	p.basedir = basedir
-	p.Conf = pConf
-	p.maxChildren = p.Conf.Int64("wgf.sapi.maxChildren", 1000)
-
-	var logFile string
-	var err error
-
-	timezone := p.Conf.String("wgf.sapi.timezone", "Asia/Shanghai")
-	p.Location, err = time.LoadLocation(timezone)
-	if nil != err {
-		p.Log(err)
-	}
-
-	logFile = p.Conf.String("wgf.sapi.logFile", "")
-	if "" == logFile {
-		p.LogWriter = os.Stderr
-		logFile = "stderr"
-	} else {
-		p.LogWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
-		if nil != err {
-			p.LogWriter = os.Stderr
-			p.Log("can't open log file " + logFile)
-			logFile = "stderr"
-		}
-	}
-
-	p.LogStderr("log will be writed into " + logFile)
-
-	var tcpListen string
-	tcpListen = p.Conf.String("wgf.sapi.tcpListen", "")
-	p.listener, err = net.Listen("tcp", tcpListen)
-	if nil != err {
-		p.Log("cannot listen to " + tcpListen)
-		return //exit
-	}
-
-	//处理退出、info信号
-	go p.handleControlSignal()
-
-	//server init
-	pluginOrders := GetPluginOrder()
-	for _, name := range pluginOrders {
-		p.pluginServerInit(name)
-	}
-
 	pWebsocketServer := &websocket.Server{}
-	pWebsocketServer.Handler = func(conn *websocket.Conn) {
+	handler = func(conn *websocket.Conn) {
 		p.ServeWebSocket(conn)
 	}
-	httpServer := &http.Server{}
-	httpServer.Handler = pWebsocketServer
-	httpServer.Serve(p.listener)
-
-	//server shutdown
-	//因为httpServer无法接收信号退出，导致这个地方无法执行。。。想办法中。。
-	for i := len(pluginOrders) - 1; i >= 0; i-- {
-		p.pluginServerShutdown(pluginOrders[i])
-	}
-
-	p.Log("server shutdown\n")
-
+	p.boot(basedir, pConf, pWebsocketServer)
 }
 
 
@@ -260,7 +209,7 @@ func (p *Server) handleControlSignal() {
 		case syscall.SIGINT:
 			p.disabled = true
 			for p.currentChildren > 0 {
-				p.Log(fmt.Sprintf("wait for currentChildren stop, remains %d", p.currentChildren))
+				p.Logger.Infof("wait for currentChildren stop, remains %d", p.currentChildren)
 				time.Sleep(1*time.Second)
 			}
 			p.listener.Close()

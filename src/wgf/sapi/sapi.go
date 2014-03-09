@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 
 	"wgf/lib/conf"
+	"wgf/lib/log"
 	"wgf/sapi/websocket"
 )
 
@@ -21,6 +22,9 @@ type Sapi struct {
 	//Config
 	BaseConfig    *conf.Conf
 	RuntimeConfig conf.Conf
+
+	//Log
+	Logger *log.Logger
 
 	//by golang http package
 	//不要用这两个属性，不保证兼容性，一旦解决，立马变为不再导出。
@@ -69,10 +73,6 @@ func (p *Sapi) Plugin(name string) interface{} {
 	return p.plugins[name]
 }
 
-func (p *Sapi) Log(log interface{}) {
-	p.server.Log(log)
-}
-
 func (p *Sapi) RequestURI() string {
 	if nil == p.Req {
 		return ""
@@ -87,8 +87,8 @@ func (p *Sapi) start(c chan int) {
 	defer func() {
 		r := recover()
 		if nil != r {
-			p.Log(r)
-			debug.PrintStack()
+			p.Logger.Warning(r)
+			p.Logger.Print(string(debug.Stack()))
 		}
 	}()
 
@@ -100,7 +100,7 @@ func (p *Sapi) start(c chan int) {
 	//execute action
 	action, actionErr := GetAction(p.actionName)
 	if nil != actionErr {
-		p.Log("URI[" + p.Req.URL.String() + "] " + actionErr.Error())
+		p.Logger.Debug("URI[" + p.Req.URL.String() + "] " + actionErr.Error())
 		return
 	}
 
