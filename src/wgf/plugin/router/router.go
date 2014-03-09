@@ -12,7 +12,6 @@ import (
 	"wgf/plugin/httpparam"
 	"wgf/sapi"
 
-	"fmt"
 	"net/url"
 	"strings"
 )

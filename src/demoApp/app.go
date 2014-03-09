@@ -1,7 +1,7 @@
-package app
+package demoApp
 
 import (
-	_ "app/action"
+	_ "demoApp/action"
 
 	"wgf/plugin/router"
 	"wgf/plugin/session"

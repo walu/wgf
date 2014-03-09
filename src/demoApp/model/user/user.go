@@ -1,8 +1,8 @@
 package user
 
 import (
-	"app/model/dao"
-	"app/model/ldap"
+	"demoApp/model/dao"
+	"demoApp/model/ldap"
 	"fmt"
 )
 

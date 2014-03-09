@@ -63,7 +63,7 @@ func (l *Logger) SetTimeLayout(layout string) {
 }
 
 func (l Logger) LogWriter() io.Writer {
-	return l.LogWriter
+	return l.logWriter
 }
 
 func (l Logger) Debug(v ...interface{}) {

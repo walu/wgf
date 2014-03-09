@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "app"
+	_ "demoApp"
 	"wgf"
 )
 

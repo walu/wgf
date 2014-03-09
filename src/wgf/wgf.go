@@ -52,8 +52,8 @@ func StartHttpServer() {
 	pConf.ParseFile(confFile)
 
 	//load conf file
-	server := server.NewServer()
-	server.Init(basedir, pConf)
+	pServer := sapi.NewServer()
+	pServer.Init(basedir, pConf)
 }
 
 func StartWebSocketServer() {
@@ -73,8 +73,8 @@ func StartWebSocketServer() {
 	pConf.ParseFile(confFile)
 
 	//load conf file
-	server := server.NewServer()
-	server.InitWebSocket(basedir, pConf)
+	pServer := sapi.NewServer()
+	pServer.InitWebSocket(basedir, pConf)
 }
 
 func init() {

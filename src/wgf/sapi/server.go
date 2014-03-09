@@ -40,8 +40,8 @@ type Server struct {
 func NewServer() *Server {
 	p := &Server{}
 	p.Logger = log.NewLogger()
-	p.LogStdout = log.NewLogger()
-	p.LogStdout.SetLogWriter(os.Stdout)
+	p.LoggerStdout = log.NewLogger()
+	p.LoggerStdout.SetLogWriter(os.Stdout)
 	return p
 }
 
@@ -78,7 +78,6 @@ func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func (p *Server) ServeWebSocket(conn *websocket.Conn) {
 
 	if p.disabled {
-		http.Error(res, "the server is shutting down", 503)
 		return
 	}
 
@@ -111,27 +110,23 @@ func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
 
 	logFile = p.Conf.String("wgf.sapi.logFile", "")
 	if "" == logFile {
-		logWriter = os.Stderr
+		logWriter = os.Stdout
 		logFile = "stdout"
 	} else {
 		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 		if nil != err {
-			logWriter = os.Stderr
+			logWriter = os.Stdout
 			p.LoggerStdout.Warningf("cannot open log file for write, error: %s, use stdout instead.", err.Error())
 			logFile = "stdout"
 		}
 	}
 	p.Logger.SetLogWriter(logWriter)
+	log.ConfLogWriter = logWriter
 
 	timezone := p.Conf.String("wgf.sapi.timezone", "Asia/Shanghai")
-	p.Location, err = time.LoadLocation(timezone)
-	if nil != err {
-		p.Logger.Warning(err.Error())
-	} else {
-		p.Logger.SetTimeLocation(timezone)
-		p.LoggerStdout.SetTimeLocation(timezone)
-		log.ConfTimeLocationName = timezone
-	}
+	p.Logger.SetTimeLocation(timezone)
+	p.LoggerStdout.SetTimeLocation(timezone)
+	log.ConfTimeLocationName = timezone
 
 	var tcpListen string
 	tcpListen = p.Conf.String("wgf.sapi.tcpListen", "")
@@ -170,7 +165,7 @@ func (p *Server) Init(basedir string, pConf *conf.Conf) {
 
 func (p *Server) InitWebSocket(basedir string, pConf *conf.Conf) {
 	pWebsocketServer := &websocket.Server{}
-	handler = func(conn *websocket.Conn) {
+	pWebsocketServer.Handler = func(conn *websocket.Conn) {
 		p.ServeWebSocket(conn)
 	}
 	p.boot(basedir, pConf, pWebsocketServer)

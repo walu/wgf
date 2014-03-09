@@ -8,7 +8,7 @@ import (
 	"wgf/plugin/session"
 	"wgf/sapi"
 
-	"app/action/base"
+	"demoApp/action/base"
 )
 
 type LoginAction struct {

@@ -1,7 +1,7 @@
 package action
 
 import (
-	"app/action/base"
+	"demoApp/action/base"
 
 	"wgf/sapi"
 	"wgf/plugin/view"
