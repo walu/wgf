@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"wgf/conf"
+	"wgf/lib/conf"
 	"wgf/sapi/websocket"
 )
 

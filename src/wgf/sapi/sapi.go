@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"wgf/conf"
+	"wgf/lib/conf"
 	"wgf/sapi/websocket"
 )
 

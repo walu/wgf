@@ -5,7 +5,7 @@ import (
 	"os"
 
 	//load sapi module
-	"wgf/conf"
+	"wgf/lib/conf"
 	"wgf/sapi"
 
 	//load all core plugins

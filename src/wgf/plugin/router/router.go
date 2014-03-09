@@ -8,7 +8,7 @@
 package router
 
 import (
-	"wgf/conf"
+	"wgf/lib/conf"
 	"wgf/plugin/httpparam"
 	"wgf/sapi"
 
