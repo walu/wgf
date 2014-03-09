@@ -60,12 +60,12 @@ func (p *Sapi) ExitRequest() {
 }
 
 //输出内容给客户端，第一次输出之前会先输出header信息
-func (p *Sapi) Print(val interface{}) {
-	fmt.Fprint(p.Stdout, val)
+func (p *Sapi) Print(val interface{}) (int, err) {
+	return fmt.Fprint(p.Stdout, val)
 }
 
-func (p *Sapi) Println(val interface{}) {
-	fmt.Fprintln(p.Stdout, val)
+func (p *Sapi) Println(val interface{}) (int, err) {
+	return fmt.Fprintln(p.Stdout, val)
 }
 
 //获取与当前请求相关的plugin，通常是指针。
