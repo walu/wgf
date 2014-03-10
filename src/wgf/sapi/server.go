@@ -117,7 +117,7 @@ func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
 		logWriter = os.Stdout
 		logFile = "stdout"
 	} else {
-		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		logWriter, err = os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 		if nil != err {
 			logWriter = os.Stdout
 			p.LoggerStdout.Warningf("cannot open log file for write, error: %s, use stdout instead.", err.Error())
