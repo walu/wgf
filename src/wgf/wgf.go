@@ -1,6 +1,7 @@
 package wgf
 
 import (
+	"fmt"
 	"flag"
 	"os"
 
@@ -19,64 +20,61 @@ import (
 
 var cliArgs map[string]string
 
-func showHelpAndExit() {
+var flagBasedir *string
+var flagConf *string
 
+func initCliArgs() {
+	flag.Parse()
+	if "" == *flagBasedir {
+		var err error
+		*flagBasedir, err = os.Getwd()
+		if nil != err {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+	cliArgs["basedir"]	= *flagBasedir
+	cliArgs["conf"]		= *flagConf
 }
 
-func visitFlags(f *flag.Flag) {
-	switch f.Name {
-	//common args
-	case "basedir":
-		cliArgs["basedir"] = f.Value.String()
-	default:
-		showHelpAndExit()
+func initConfWithCliArgs() *conf.Conf {
+	initCliArgs()
+	basedir := cliArgs["basedir"]
+
+	var confFile string
+	var pConf *conf.Conf
+	var err error
+
+	pConf = conf.NewConf()
+	confFile = basedir + "/conf/" + cliArgs["conf"]
+	fmt.Println(cliArgs)
+	err = pConf.ParseFile(confFile)
+	if nil != err {
+		fmt.Println(err)
+		os.Exit(-1)
 	}
+	return pConf
 }
 
 //启动http(fastcgi)服务器
 func StartHttpServer() {
-
-	//parse cli params
-	flag.Visit(visitFlags)
-
-	var basedir string
-	basedir = cliArgs["basedir"]
-	if "" == basedir {
-		basedir, _ = os.Getwd()
-	}
-
-	var confFile string
-	var pConf *conf.Conf
-	confFile = basedir + "/conf/wgf.ini"
-	pConf = conf.NewConf()
-	pConf.ParseFile(confFile)
-
 	//load conf file
+	pConf	:= initConfWithCliArgs()
 	pServer := sapi.NewServer()
-	pServer.Init(basedir, pConf)
+	pServer.Init(cliArgs["basedir"], pConf)
 }
 
 func StartWebSocketServer() {
-	//parse cli params
-	flag.Visit(visitFlags)
-
-	var basedir string
-	basedir = cliArgs["basedir"]
-	if "" == basedir {
-		basedir, _ = os.Getwd()
-	}
-
-	var confFile string
-	var pConf *conf.Conf
-	confFile = basedir + "/conf/wgf.ini"
-	pConf = conf.NewConf()
-	pConf.ParseFile(confFile)
-
 	//load conf file
+	pConf	:= initConfWithCliArgs()
 	pServer := sapi.NewServer()
-	pServer.InitWebSocket(basedir, pConf)
+	pServer.InitWebSocket(cliArgs["basedir"], pConf)
 }
 
 func init() {
 	cliArgs = make(map[string]string)
+
+	flagBasedir	= flag.String("basedir", "", "set the basedir, the `pwd` is default")
+	flagConf	= flag.String("conf", "wgf.ini", "set the default filename in conf/, wgf.ini is the default")
 }
+
