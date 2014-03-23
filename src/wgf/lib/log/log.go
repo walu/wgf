@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"time"
+	"strings"
 )
 
 const (
@@ -41,8 +42,29 @@ func NewLogger() *Logger {
 	return l
 }
 
+func (l *Logger) SetMinLogLevelName(name string) {
+	var level int
+	var badName bool
+	level = LEVEL_INFO
+	switch strings.ToLower(name) {
+		case "debug": level = LEVEL_DEBUG
+		case "info": level = LEVEL_INFO
+		case "warning": level = LEVEL_WARNING
+		case "fatal": level = LEVEL_FATAL
+		default: badName = true
+	}
+	l.SetMinLogLevel(level)
+	if badName {
+		l.Warningf("bad log level name: %s", name)
+	}
+}
+
 func (l *Logger) SetMinLogLevel(level int) {
 	l.minLogLevel = level
+}
+
+func (l *Logger) MinLogLevel() int {
+	return l.minLogLevel
 }
 
 func (l *Logger) SetLogWriter(logWriter io.Writer) {

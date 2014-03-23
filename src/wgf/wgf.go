@@ -47,7 +47,6 @@ func initConfWithCliArgs() *conf.Conf {
 
 	pConf = conf.NewConf()
 	confFile = basedir + "/conf/" + cliArgs["conf"]
-	fmt.Println(cliArgs)
 	err = pConf.ParseFile(confFile)
 	if nil != err {
 		fmt.Println(err)

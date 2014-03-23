@@ -119,8 +119,10 @@ func (p *Server) ServerInit() {
 			logFile = "stdout"
 		}
 	}
+	p.Logger.SetMinLogLevelName(p.Conf.String("wgf.sapi.minLogLevel", "info"))
 	p.Logger.SetLogWriter(logWriter)
 	log.ConfLogWriter = logWriter
+	log.ConfMinLogLevel = p.Logger.MinLogLevel()
 
 	timezone := p.Conf.String("wgf.sapi.timezone", "Asia/Shanghai")
 	p.Logger.SetTimeLocation(timezone)
