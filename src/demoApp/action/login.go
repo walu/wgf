@@ -41,12 +41,14 @@ func (p *LoginAction) DoGet() error {
 }
 
 func (p *LoginAction) DoPost() error {
+	p.Sapi.Logger.Info("here.")
 	pHttpparam := p.Sapi.Plugin("httpparam").(*httpparam.Param)
 	uname := pHttpparam.Post.Get("uname")
 
 	pRouter := p.Sapi.Plugin("router").(*router.Router)
 	pSession := p.Sapi.Plugin("session").(*session.Session)
 	pSession.Set("uname", uname)
+	p.Sapi.Logger.Info(pSession.Get("uname"))
 
 	pHeader := p.Sapi.Plugin("header").(*header.Header)
 	pHeader.Redirect(pRouter.Url("index", nil))

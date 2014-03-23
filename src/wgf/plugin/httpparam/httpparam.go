@@ -102,5 +102,6 @@ func init() {
 	info := sapi.PluginInfo{}
 	info.Creater = newParam
 	info.HookPluginRequestInit = requestInit
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("httpparam", info)
 }

@@ -33,6 +33,8 @@ type Server struct {
 
 	Handler ServerHandler
 
+	PluginOrder []string
+
 	shutdownNotifyC chan bool
 	sigIntCount int
 
@@ -64,6 +66,15 @@ func NewWebsocketServer() *Server {
 	p.Name = "Websocket"
 	p.FullName = "Wgf Websocket Server"
 	p.Handler = &WebsocketServerHandler{}
+	return p
+}
+
+func NewCliServer() *Server {
+	p := newServer()
+	p.Id = IdCli
+	p.Name = "Cli"
+	p.FullName = "Wgf Cli Programe"
+	p.Handler = &CliServerHandler{}
 	return p
 }
 
@@ -120,10 +131,11 @@ func (p *Server) ServerInit() {
 	go p.handleControlSignal()
 
 	//server init
-	pluginOrders := GetPluginOrder()
-	for _, name := range pluginOrders {
+	p.PluginOrder = GetPluginOrder(p)
+	for _, name := range p.PluginOrder {
 		p.pluginServerInit(name)
 	}
+	p.Logger.Info("ServerInit Done")
 }
 
 func (p *Server) ServerShutdown() {
@@ -133,9 +145,8 @@ func (p *Server) ServerShutdown() {
 	}
 
 	//server shutdown
-	pluginOrders := GetPluginOrder()
-	for i := len(pluginOrders) - 1; i >= 0; i-- {
-		p.pluginServerShutdown(pluginOrders[i])
+	for i := len(p.PluginOrder) - 1; i >= 0; i-- {
+		p.pluginServerShutdown(p.PluginOrder[i])
 	}
 	p.Logger.Sys("server shutdown\n")
 	os.Exit(0)
@@ -144,6 +155,7 @@ func (p *Server) ServerShutdown() {
 func (p *Server) pluginServerInit(name string) {
 	info, ok := pluginMap[name]
 	if ok {
+		p.Logger.Info("PluginServerInit "+name)
 		if nil != info.HookPluginServerInit {
 			info.HookPluginServerInit(p)
 		}
@@ -153,6 +165,7 @@ func (p *Server) pluginServerInit(name string) {
 func (p *Server) pluginServerShutdown(name string) {
 	info, ok := pluginMap[name]
 	if ok {
+		p.Logger.Info("PluginServerShutdown "+name)
 		if nil != info.HookPluginServerShutdown {
 			info.HookPluginServerShutdown(p)
 		}

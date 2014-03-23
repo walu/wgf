@@ -99,5 +99,6 @@ func init() {
 	info.HookPluginServerInit = serverInit
 	info.HookPluginRequestInit = requestInit
 	info.BasePlugins = []string{"httpparam"}
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("router", info)
 }

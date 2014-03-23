@@ -32,5 +32,6 @@ func init() {
 	info := sapi.PluginInfo{}
 	info.Creater = newPlugin
 	info.HookPluginRequestInit = requestInit
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("header", info)
 }

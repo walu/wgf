@@ -95,5 +95,6 @@ func init() {
 	info.Creater = sessionCreater
 	info.HookPluginRequestInit = requestInit
 	info.BasePlugins = []string{"cookie"}
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("session", info)
 }

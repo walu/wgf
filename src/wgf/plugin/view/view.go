@@ -181,6 +181,7 @@ func init() {
 	info.Creater = pluginCreater
 	info.HookPluginServerInit = serverInit
 	info.HookPluginRequestInit = requestInit
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("view", info)
 }
 

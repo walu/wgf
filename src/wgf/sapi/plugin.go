@@ -15,6 +15,14 @@ type PluginInfo struct {
 	//先Init依赖插件
 	//后Shutdown依赖插件。
 	BasePlugins []string
+
+	//支持的server类型
+	serverIds []int
+}
+
+//设置扩展支持的server类型
+func (p *PluginInfo) Support(id...int) {
+	p.serverIds = id
 }
 
 //已注册的plugin
@@ -31,7 +39,7 @@ func RegisterPlugin(name string, hookInfo PluginInfo) {
 }
 
 //获取已注册的plugin列表，已经根据依赖关系排好顺序。排在后面的依赖前面的。
-func GetPluginOrder() []string {
+func GetPluginOrder(pServer *Server) []string {
 
 	if pluginHasOrdered {
 		return pluginList
@@ -41,7 +49,12 @@ func GetPluginOrder() []string {
 
 	source := map[string][]string{}
 	for k, v := range pluginMap {
-		source[k] = v.BasePlugins
+		for _, serverId := range v.serverIds {
+			if serverId == pServer.Id {
+				source[k] = v.BasePlugins
+				break
+			}
+		}
 	}
 
 	var count int
@@ -68,7 +81,7 @@ func GetPluginOrder() []string {
 		}
 
 		if count == 0 {
-			fmt.Println(fmt.Sprintf("plugin rely relation errors\nplugin registed: %p\nlastTry: %p\n", pluginList, lastTry))
+			pServer.Logger.Fatalf("plugin rely relation errors\nplugin registed: %p\nlastTry: %p\n", pluginList, lastTry)
 			break
 		}
 	}

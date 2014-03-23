@@ -44,5 +44,6 @@ func init() {
 	info.HookPluginServerInit = appServerInit
 	info.HookPluginRequestInit = appRequestInit
 	info.BasePlugins = []string{"session", "view", "router"}
+	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("_app", info)
 }

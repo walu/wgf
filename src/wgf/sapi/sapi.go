@@ -3,11 +3,12 @@ package sapi
 import (
 	"fmt"
 	"io"
+	"os"
 	"net/http"
 	"runtime"
 	"runtime/debug"
 
-	"wgf/lib/conf"
+//	"wgf/lib/conf"
 	"wgf/lib/log"
 	"wgf/sapi/websocket"
 )
@@ -93,7 +94,7 @@ func (p *Sapi) start(c chan int) {
 		}
 	}()
 
-	pluginOrders := GetPluginOrder()
+	pluginOrders := p.server.PluginOrder
 	for _, name := range pluginOrders {
 		p.pluginRequestInit(name)
 	}
@@ -101,7 +102,7 @@ func (p *Sapi) start(c chan int) {
 	//execute action
 	action, actionErr := GetAction(p.actionName)
 	if nil != actionErr {
-		p.Logger.Debug("ROUTER[" + p.Req.URL.String() + "] " + actionErr.Error())
+		p.Logger.Debug("ROUTER[" + p.RequestURI() + "] " + actionErr.Error())
 		return
 	}
 
@@ -118,8 +119,8 @@ func (p *Sapi) start(c chan int) {
 	}
 
 	//request shutdown
-	for i := len(pluginOrders) - 1; i >= 0; i-- {
-		p.pluginRequestShutdown(pluginOrders[i])
+	for i := len(p.server.PluginOrder) - 1; i >= 0; i-- {
+		p.pluginRequestShutdown(p.server.PluginOrder[i])
 	}
 }
 

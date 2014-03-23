@@ -76,7 +76,7 @@ func StartCliServer() {
 
 	//load conf file
 	pConf	:= initConfWithCliArgs()
-	pServer := sapi.NewWebsocketServer()
+	pServer := sapi.NewCliServer()
 	pServer.Boot(cliArgs["basedir"], pConf)
 }
 
