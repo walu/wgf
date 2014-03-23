@@ -134,6 +134,16 @@ func (l Logger) Fatalf(format string, v ...interface{}) {
 	os.Exit(1)
 }
 
+//必须要告知的一些系统事件
+func (l Logger) Sys(v ...interface{}) {
+	l.output("Sys", v...)
+}
+
+//必须要告知的一些系统事件
+func (l Logger) Sysf(format string, v ...interface{}) {
+	l.outputf("Sys", format, v...)
+}
+
 func (l Logger) Print(v ...interface{}) {
 	fmt.Fprintln(l.logWriter, v...)
 }

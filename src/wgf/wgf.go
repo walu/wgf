@@ -61,15 +61,26 @@ func StartHttpServer() {
 	//load conf file
 	pConf	:= initConfWithCliArgs()
 	pServer := sapi.NewServer()
-	pServer.Init(cliArgs["basedir"], pConf)
+	pServer.Boot(cliArgs["basedir"], pConf)
 }
 
 func StartWebSocketServer() {
 	//load conf file
 	pConf	:= initConfWithCliArgs()
-	pServer := sapi.NewServer()
-	pServer.InitWebSocket(cliArgs["basedir"], pConf)
+	pServer := sapi.NewWebsocketServer()
+	pServer.Boot(cliArgs["basedir"], pConf)
 }
+
+func StartCliServer() {
+	//flagActionName := flag.String("action", "index", "set the action name")
+
+	//load conf file
+	pConf	:= initConfWithCliArgs()
+	pServer := sapi.NewWebsocketServer()
+	pServer.Boot(cliArgs["basedir"], pConf)
+}
+
+
 
 func init() {
 	cliArgs = make(map[string]string)

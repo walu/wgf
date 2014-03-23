@@ -1,47 +1,69 @@
 package sapi
 
 import (
-	"fmt"
 	"io"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-
-	"wgf/sapi/websocket"
 	"wgf/lib/conf"
 	"wgf/lib/log"
 )
 
-type Server struct {
+const (
+	IdHttp = 1
+	IdWebsocket = 2
+	IdSocket = 3
+	IdCli = 4
+)
 
-	disabled bool
+type ServerHandler interface {
+	Serve(p *Server)
+}
+
+type Server struct {
+	//base info
+	Id int
+	Name string
+	FullName string
 
 	Conf *conf.Conf
-
 	Logger *log.Logger
 	LoggerStdout *log.Logger
 
+	Handler ServerHandler
+
+	shutdownNotifyC chan bool
+	sigIntCount int
+
 	basedir         string
-	maxChildren     int64
-	currentChildren int64
-
-	listener net.Listener
-
-	//for websocket server
-	pWebsocketServer *websocket.Server
-
-	//for terminal server
 }
 
-func NewServer() *Server {
+func newServer() *Server {
 	p := &Server{}
 	p.Logger = log.NewLogger()
 	p.LoggerStdout = log.NewLogger()
 	p.LoggerStdout.SetLogWriter(os.Stdout)
+	return p
+
+}
+
+func NewServer() *Server {
+	p := newServer()
+	p.Id = IdHttp
+	p.Name = "Http"
+	p.FullName = "Wgf Http Server"
+	p.Handler = &HttpServerHandler{}
+	return p
+}
+
+//Get Server For Websocket apps.
+func NewWebsocketServer() *Server {
+	p := newServer()
+	p.Id = IdWebsocket
+	p.Name = "Websocket"
+	p.FullName = "Wgf Websocket Server"
+	p.Handler = &WebsocketServerHandler{}
 	return p
 }
 
@@ -53,61 +75,23 @@ func (p *Server) Confdir() string {
 	return p.basedir + "/conf/"
 }
 
-func (p *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if p.disabled {
-		http.Error(res, "the server is shutting down", 503)
-		return
+func (p *Server) ShutdownNotifyC() chan bool {
+	if nil == p.shutdownNotifyC {
+		p.shutdownNotifyC = make(chan bool)
 	}
-	if p.currentChildren >= p.maxChildren {
-		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
-		http.Error(res, errorMsg, 503)
-		p.Logger.Warning(errorMsg)
-		return
-	}
-
-	//manage currentChildren
-	defer func() { p.currentChildren-- }()
-	p.currentChildren++
-
-	sapi := NewSapi(p, res, req)
-	c := make(chan int)
-	go sapi.start(c)
-	select {
-		case <-c ://request has been finishied
-		case <-res.(http.CloseNotifier).CloseNotify(): //client disconnected
-			sapi.Close()
-	}
+	return p.shutdownNotifyC
 }
 
-func (p *Server) ServeWebSocket(conn *websocket.Conn) {
-
-	if p.disabled {
-		return
-	}
-
-	if p.currentChildren >= p.maxChildren {
-		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
-		p.Logger.Warning(errorMsg)
-		return
-	}
-
-	//manage currentChildren
-	defer func() { p.currentChildren-- }()
-	p.currentChildren++
-
-	sapi := NewWebSocketSapi(p, conn)
-	c := make(chan int)
-	go sapi.start(c)
-	<-c //blocked here, wait for process finished
-}
-
-
-
-func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
+func (p *Server) Boot(basedir string, conf *conf.Conf) {
 	p.basedir = basedir
-	p.Conf = pConf
-	p.maxChildren = p.Conf.Int64("wgf.sapi.maxChildren", 1000)
+	p.Conf = conf
 
+	p.ServerInit()
+	p.Handler.Serve(p)
+	p.ServerShutdown()
+}
+
+func (p *Server) ServerInit() {
 	var logWriter io.Writer
 	var logFile string
 	var err error
@@ -132,14 +116,6 @@ func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
 	p.LoggerStdout.SetTimeLocation(timezone)
 	log.ConfTimeLocationName = timezone
 
-	var tcpListen string
-	tcpListen = p.Conf.String("wgf.sapi.tcpListen", "")
-	p.listener, err = net.Listen("tcp", tcpListen)
-	if nil != err {
-		p.Logger.Fatalf("cannot listen to %s, error: %s", tcpListen, err.Error())
-		return //exit
-	}
-
 	//处理退出、info信号
 	go p.handleControlSignal()
 
@@ -148,34 +124,22 @@ func (p *Server) boot(basedir string, pConf *conf.Conf, handler http.Handler) {
 	for _, name := range pluginOrders {
 		p.pluginServerInit(name)
 	}
+}
 
-	httpServer := &http.Server{}
-	httpServer.Handler = handler
-	httpServer.Serve(p.listener)
+func (p *Server) ServerShutdown() {
+	if nil != p.shutdownNotifyC && p.sigIntCount<=1 {
+		p.Logger.Sysf("wait for server handler[%s, %p] shutdown, send SIG_INT again to skip this step", p.Name, &p.Handler)
+		p.shutdownNotifyC <- true
+	}
 
 	//server shutdown
+	pluginOrders := GetPluginOrder()
 	for i := len(pluginOrders) - 1; i >= 0; i-- {
 		p.pluginServerShutdown(pluginOrders[i])
 	}
-
-	p.Logger.Info("server shutdown\n")
+	p.Logger.Sys("server shutdown\n")
+	os.Exit(0)
 }
-
-
-
-func (p *Server) Init(basedir string, pConf *conf.Conf) {
-	p.boot(basedir, pConf, p)
-}
-
-func (p *Server) InitWebSocket(basedir string, pConf *conf.Conf) {
-	pWebsocketServer := &websocket.Server{}
-	pWebsocketServer.Handler = func(conn *websocket.Conn) {
-		p.ServeWebSocket(conn)
-	}
-	p.boot(basedir, pConf, pWebsocketServer)
-}
-
-
 
 func (p *Server) pluginServerInit(name string) {
 	info, ok := pluginMap[name]
@@ -206,17 +170,8 @@ func (p *Server) handleControlSignal() {
 		s := <-c
 		switch s {
 		case syscall.SIGINT:
-			p.disabled = true
-			for p.currentChildren > 0 {
-				p.Logger.Infof(
-					"wait for currentChildren stop, remains %d. use [ kill -9 %d ] if you want to kill it at once.", 
-					p.currentChildren,
-					os.Getpid(),
-				)
-				time.Sleep(1*time.Second)
-			}
-			p.listener.Close()
-			return
+			p.sigIntCount++
+			p.ServerShutdown()
 		}
 	}
 }

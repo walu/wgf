@@ -16,14 +16,6 @@ type Sapi struct {
 	server *Server
 	closed bool
 
-	//Description
-	Name     string
-	FullName string
-
-	//Config
-	BaseConfig    *conf.Conf
-	RuntimeConfig conf.Conf
-
 	//Log
 	Logger *log.Logger
 
@@ -109,7 +101,7 @@ func (p *Sapi) start(c chan int) {
 	//execute action
 	action, actionErr := GetAction(p.actionName)
 	if nil != actionErr {
-		p.Logger.Debug("URI[" + p.Req.URL.String() + "] " + actionErr.Error())
+		p.Logger.Debug("ROUTER[" + p.Req.URL.String() + "] " + actionErr.Error())
 		return
 	}
 
@@ -155,8 +147,6 @@ func (p *Sapi) pluginRequestShutdown(name string) {
 
 func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi {
 	s := &Sapi{}
-	s.Name = "http"
-	s.FullName = "Wgf Http Server API"
 	s.plugins = make(map[string]interface{})
 
 	s.server = pServer
@@ -173,8 +163,6 @@ func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi 
 
 func NewWebSocketSapi(pServer *Server, conn *websocket.Conn) *Sapi {
 	s := &Sapi{}
-	s.Name = "websocket"
-	s.FullName = "Wgf websocket Server API"
 	s.plugins = make(map[string]interface{})
 
 	s.server = pServer
@@ -188,3 +176,18 @@ func NewWebSocketSapi(pServer *Server, conn *websocket.Conn) *Sapi {
 
 	return s
 }
+
+func NewCliSapi(pServer *Server) *Sapi {
+	s := &Sapi{}
+	s.plugins = make(map[string]interface{})
+
+	s.server = pServer
+	s.Logger = pServer.Logger
+
+	s.Stdout = os.Stdout
+	s.Stderr = os.Stderr
+	s.Stdin = os.Stdin
+
+	return s
+}
+
