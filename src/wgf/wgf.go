@@ -9,6 +9,8 @@ import (
 	"wgf/lib/conf"
 	"wgf/sapi"
 
+	//"runtime/pprof"
+
 	//load all core plugins
 	_ "wgf/plugin/cookie"
 	_ "wgf/plugin/header"

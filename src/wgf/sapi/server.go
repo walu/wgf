@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"wgf/lib/conf"
 	"wgf/lib/log"
@@ -19,6 +20,7 @@ const (
 
 type ServerHandler interface {
 	Serve(p *Server)
+	Shutdown() chan bool
 }
 
 type Server struct {
@@ -35,10 +37,13 @@ type Server struct {
 
 	PluginOrder []string
 
-	shutdownNotifyC chan bool
-	sigIntCount int
+	shutdownC chan bool //限制Shutdown只发生一次
+	sigIntC		chan bool //接收SIG_INT信号，用于强制结束程序
+	handlerFinishedC chan bool //handler处理完毕，结束程序
+	sigIntCount int	//SIG_INT信号次数
 
 	basedir         string
+
 }
 
 func newServer() *Server {
@@ -46,6 +51,12 @@ func newServer() *Server {
 	p.Logger = log.NewLogger()
 	p.LoggerStdout = log.NewLogger()
 	p.LoggerStdout.SetLogWriter(os.Stdout)
+
+	p.shutdownC = make(chan bool, 1)
+	p.shutdownC <- true //执行过程只赋值这一次
+
+	p.sigIntC = make(chan bool)
+	p.handlerFinishedC = make(chan bool)
 	return p
 
 }
@@ -78,6 +89,10 @@ func NewCliServer() *Server {
 	return p
 }
 
+func (p *Server) NotifyHandlerFinished() {
+	p.handlerFinishedC <- true
+}
+
 func (p *Server) Basedir() string {
 	return p.basedir
 }
@@ -86,19 +101,20 @@ func (p *Server) Confdir() string {
 	return p.basedir + "/conf/"
 }
 
-func (p *Server) ShutdownNotifyC() chan bool {
-	if nil == p.shutdownNotifyC {
-		p.shutdownNotifyC = make(chan bool)
-	}
-	return p.shutdownNotifyC
-}
-
 func (p *Server) Boot(basedir string, conf *conf.Conf) {
 	p.basedir = basedir
 	p.Conf = conf
 
 	p.ServerInit()
-	p.Handler.Serve(p)
+	go p.Handler.Serve(p)
+
+	//wait for shutdown
+	select {
+		case <-p.handlerFinishedC: //Handler执行完毕
+			p.Logger.Sys("Shutdown Server: Server handler finished")
+		case <-p.sigIntC: //SIG_INT信号
+			p.Logger.Sys("Shutdown Server: Signal SIG_INT")
+	}
 	p.ServerShutdown()
 }
 
@@ -141,17 +157,27 @@ func (p *Server) ServerInit() {
 }
 
 func (p *Server) ServerShutdown() {
-	if nil != p.shutdownNotifyC && p.sigIntCount<=1 {
-		p.Logger.Sysf("wait for server handler[%s, %p] shutdown, send SIG_INT again to skip this step", p.Name, &p.Handler)
-		p.shutdownNotifyC <- true
+	//默认调用Handler的Shutdown后再结束。
+	//如果连续按两次SIG_INT信号，则立即结束。
+waitLoop:
+	for {
+		//p.Logger.Sysf("wait for server handler[%s, %p] shutdown, send SIG_INT again to skip this step", p.Name, &p.Handler)
+		select {
+			case <-p.Handler.Shutdown():
+				break waitLoop
+			case <-time.After(1 * time.Second):
+				p.Logger.Sys("time out")
+				if (p.sigIntCount>1) {
+					break waitLoop
+				}
+		}
 	}
 
 	//server shutdown
 	for i := len(p.PluginOrder) - 1; i >= 0; i-- {
 		p.pluginServerShutdown(p.PluginOrder[i])
 	}
-	p.Logger.Sys("server shutdown\n")
-	os.Exit(0)
+	p.Logger.Sys("Server Shutdown\n")
 }
 
 func (p *Server) pluginServerInit(name string) {
@@ -175,8 +201,6 @@ func (p *Server) pluginServerShutdown(name string) {
 }
 
 //处理退出、info信号
-//使用SIG_INT来阻止新请求，等待旧请求处理完成后再正式退出。
-//使用SIG_KILL来粗暴的直接停掉进程
 func (p *Server) handleControlSignal() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGUSR1)
@@ -186,7 +210,9 @@ func (p *Server) handleControlSignal() {
 		switch s {
 		case syscall.SIGINT:
 			p.sigIntCount++
-			p.ServerShutdown()
+			if p.sigIntCount==1 {
+				p.sigIntC<-true
+			}
 		}
 	}
 }

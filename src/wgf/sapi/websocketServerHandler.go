@@ -36,12 +36,6 @@ func (p *WebsocketServerHandler) Serve(pServer *Server) {
 		return //exit
 	}
 
-	//handle server shutdown
-	go func(){
-		<-p.pServer.ShutdownNotifyC()
-		p.shutdown()
-	}()
-
 	//package: net/http
 	pWebsocketServer := &websocket.Server{}
 	pWebsocketServer.Handler = func(conn *websocket.Conn) {
@@ -75,7 +69,13 @@ func (p *WebsocketServerHandler) ServeWebSocket(conn *websocket.Conn) {
 	<-c //blocked here, wait for process finished
 }
 
-func (p *WebsocketServerHandler) shutdown() {
+func (p *WebsocketServerHandler) Shutdown() chan bool {
+	c := make(chan bool)
+	go p.shutdownWorkder(c)
+	return c
+}
+
+func (p *WebsocketServerHandler) shutdownWorkder(c chan bool) {
 	p.disabled = true
 	for p.currentChildren > 0 {
 		p.pServer.Logger.Infof(
@@ -86,4 +86,5 @@ func (p *WebsocketServerHandler) shutdown() {
 		time.Sleep(1*time.Second)
 	}
 	p.Ln.Close()
+	c<-true
 }

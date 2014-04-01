@@ -20,7 +20,13 @@ type HttpServerHandler struct {
 	currentChildren int64
 }
 
-func (p *HttpServerHandler) shutdown() {
+func (p *HttpServerHandler) Shutdown() chan bool{
+	c := make(chan bool)
+	go p.shutdownWorker(c)
+	return c
+}
+
+func (p *HttpServerHandler) shutdownWorker(c chan bool){
 	p.disabled = true
 	for p.currentChildren > 0 {
 		p.pServer.Logger.Infof(
@@ -31,7 +37,9 @@ func (p *HttpServerHandler) shutdown() {
 		time.Sleep(1*time.Second)
 	}
 	p.Ln.Close()
+	c<-true
 }
+
 
 func (p *HttpServerHandler) Serve(pServer *Server) {
 	p.pServer = pServer
@@ -47,16 +55,13 @@ func (p *HttpServerHandler) Serve(pServer *Server) {
 		return //exit
 	}
 
-	//handle server shutdown
-	go func(){
-		<-p.pServer.ShutdownNotifyC()
-		p.shutdown()
-	}()
-
 	//package: net/http
 	httpServer := &http.Server{}
 	httpServer.Handler = p
 	httpServer.Serve(p.Ln)
+
+	//notifyHandlerFinished
+	pServer.NotifyHandlerFinished()
 }
 
 func (p *HttpServerHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {

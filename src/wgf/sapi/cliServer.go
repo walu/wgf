@@ -6,24 +6,21 @@ type CliServerHandler struct {
 	pServer *Server
 }
 
-func (p *CliServerHandler) shutdown() {
+func (p *CliServerHandler) Shutdown() chan bool {
 	p.disabled = true
+
+	c := make(chan bool)
+	go func(){c<-true}()
+	return c
 }
 
 func (p *CliServerHandler) Serve(pServer *Server) {
 	p.pServer = pServer
-
-	//handle server shutdown
-	go func(){
-		<-p.pServer.ShutdownNotifyC()
-		p.shutdown()
-	}()
 
 	sapi := NewCliSapi(p.pServer)
 	sapi.SetActionName("index")
 	c := make(chan int)
 	go sapi.start(c)
 	<-c
-
 }
 
