@@ -5,6 +5,6 @@
 /*
 wgf是一款基于Go的编程框架。
 
-致力于提供一个可行、统一的http、websocket、socket、cli编程框架。统一常见的编程任务，提高团队的工作效率。
+致力于提供一个可行、统一的http、websocket、socket、cli编程框架，以一种尽可能统一的方式完成日常任务。
 */
 package wgf
