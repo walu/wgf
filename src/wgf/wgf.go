@@ -38,7 +38,7 @@ func setMainFlags() {
 	conffile = flag.String("conf", "wgf.ini", "set the default filename located in $basedir/conf/, wgf.ini is the default")
 }
 
-func parseCliArgs() {
+func parseArgs() {
 	if flag.Parsed() {
 		return
 	}
@@ -86,7 +86,7 @@ func initConf() *conf.Conf {
 
 //启动Http服务器
 func StartHttpServer() {
-	parseCliArgs()
+	parseArgs()
 	pConf	:= initConf()
 	pServer := sapi.NewServer()
 	pServer.Boot(*basedir, pConf)
@@ -94,7 +94,7 @@ func StartHttpServer() {
 
 //启动Websocket服务器
 func StartWebSocketServer() {
-	parseCliArgs()
+	parseArgs()
 	pConf	:= initConf()
 	pServer := sapi.NewWebsocketServer()
 	pServer.Boot(*basedir, pConf)
@@ -102,7 +102,7 @@ func StartWebSocketServer() {
 
 //启动Cli终端程序
 func StartCliServer() {
-	parseCliArgs()
+	parseArgs()
 	pConf	:= initConf()
 	pServer := sapi.NewCliServer()
 	pServer.Boot(*basedir, pConf)
