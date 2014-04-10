@@ -1,3 +1,7 @@
+// Copyright 2014 The Wgf Authors. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package wgf
 
 import (
@@ -9,6 +13,7 @@ import (
 	"wgf/lib/conf"
 	"wgf/sapi"
 
+	//for test only.
 	//"runtime/pprof"
 
 	//load all core plugins
@@ -57,7 +62,7 @@ func initConfWithCliArgs() *conf.Conf {
 	return pConf
 }
 
-//启动http(fastcgi)服务器
+//启动Http服务器
 func StartHttpServer() {
 	//load conf file
 	pConf	:= initConfWithCliArgs()
@@ -65,6 +70,7 @@ func StartHttpServer() {
 	pServer.Boot(cliArgs["basedir"], pConf)
 }
 
+//启动Websocket服务器
 func StartWebSocketServer() {
 	//load conf file
 	pConf	:= initConfWithCliArgs()
@@ -72,6 +78,7 @@ func StartWebSocketServer() {
 	pServer.Boot(cliArgs["basedir"], pConf)
 }
 
+//启动Cli终端程序
 func StartCliServer() {
 	//flagActionName := flag.String("action", "index", "set the action name")
 
@@ -80,8 +87,6 @@ func StartCliServer() {
 	pServer := sapi.NewCliServer()
 	pServer.Boot(cliArgs["basedir"], pConf)
 }
-
-
 
 func init() {
 	cliArgs = make(map[string]string)
