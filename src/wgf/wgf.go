@@ -25,38 +25,60 @@ import (
 	_ "wgf/plugin/view"
 )
 
-var cliArgs map[string]string
+const (
+	Version = "0.1"
+)
 
-var flagBasedir *string
-var flagConf *string
+var basedir *string
+var conffile *string
 
-func initCliArgs() {
-	flag.Parse()
-	if "" == *flagBasedir {
-		var err error
-		*flagBasedir, err = os.Getwd()
-		if nil != err {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}
-	cliArgs["basedir"]	= *flagBasedir
-	cliArgs["conf"]		= *flagConf
+//set the main flags for all kinds of servers
+func setMainFlags() {
+	basedir	 = flag.String("basedir", "", "set the basedir, the `pwd` is default")
+	conffile = flag.String("conf", "wgf.ini", "set the default filename located in $basedir/conf/, wgf.ini is the default")
 }
 
-func initConfWithCliArgs() *conf.Conf {
-	initCliArgs()
-	basedir := cliArgs["basedir"]
+func parseCliArgs() {
+	if flag.Parsed() {
+		return
+	}
 
+	setMainFlags()
+	flag.Usage = printHelpInfo
+	flag.Parse()
+
+	if "" == *basedir {
+		var err error
+		*basedir, err = os.Getwd()
+		if nil != err {
+			fmt.Println("error occurs when getting pwd:", err)
+			os.Exit(-1)
+		}
+	}
+
+	if "" == *conffile {
+		*conffile = "wgf.ini"
+	}
+}
+
+func printHelpInfo() {
+	fmt.Fprintf(os.Stderr, "wgf is a framework written in go.\n")
+	fmt.Fprintf(os.Stderr, "version: %s\n", Version)
+	fmt.Fprintf(os.Stderr, "\n")
+	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\n")
+}
+
+func initConf() *conf.Conf {
 	var confFile string
 	var pConf *conf.Conf
 	var err error
 
 	pConf = conf.NewConf()
-	confFile = basedir + "/conf/" + cliArgs["conf"]
+	confFile = *basedir + "/conf/" + *conffile
 	err = pConf.ParseFile(confFile)
 	if nil != err {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
 	}
 	return pConf
@@ -64,34 +86,25 @@ func initConfWithCliArgs() *conf.Conf {
 
 //启动Http服务器
 func StartHttpServer() {
-	//load conf file
-	pConf	:= initConfWithCliArgs()
+	parseCliArgs()
+	pConf	:= initConf()
 	pServer := sapi.NewServer()
-	pServer.Boot(cliArgs["basedir"], pConf)
+	pServer.Boot(*basedir, pConf)
 }
 
 //启动Websocket服务器
 func StartWebSocketServer() {
-	//load conf file
-	pConf	:= initConfWithCliArgs()
+	parseCliArgs()
+	pConf	:= initConf()
 	pServer := sapi.NewWebsocketServer()
-	pServer.Boot(cliArgs["basedir"], pConf)
+	pServer.Boot(*basedir, pConf)
 }
 
 //启动Cli终端程序
 func StartCliServer() {
-	//flagActionName := flag.String("action", "index", "set the action name")
-
-	//load conf file
-	pConf	:= initConfWithCliArgs()
+	parseCliArgs()
+	pConf	:= initConf()
 	pServer := sapi.NewCliServer()
-	pServer.Boot(cliArgs["basedir"], pConf)
-}
-
-func init() {
-	cliArgs = make(map[string]string)
-
-	flagBasedir	= flag.String("basedir", "", "set the basedir, the `pwd` is default")
-	flagConf	= flag.String("conf", "wgf.ini", "set the default filename in conf/, wgf.ini is the default")
+	pServer.Boot(*basedir, pConf)
 }
 
