@@ -31,5 +31,6 @@ func (p *CliServerHandler) Serve(pServer *Server) {
 	c := make(chan int)
 	go sapi.start(c)
 	<-c
+	p.pServer.NotifyHandlerFinished()
 }
 

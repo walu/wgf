@@ -153,7 +153,7 @@ func (p *Server) ServerInit() {
 	for _, name := range p.PluginOrder {
 		p.pluginServerInit(name)
 	}
-	p.Logger.Info("ServerInit Done")
+	p.Logger.Sys("ServerInit Done")
 }
 
 func (p *Server) ServerShutdown() {
