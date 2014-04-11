@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+//	"time"
 
 	"wgf/lib/conf"
 	"wgf/lib/log"
@@ -89,6 +89,15 @@ func NewCliServer() *Server {
 	return p
 }
 
+func NewSocketServer() *Server {
+	p := newServer()
+	p.Id = IdSocket
+	p.Name = "Socket Server"
+	p.FullName = "Wgf Socket Server"
+	p.Handler = &SocketServerHandler{}
+	return p
+}
+
 func (p *Server) NotifyHandlerFinished() {
 	p.handlerFinishedC <- true
 }
@@ -159,18 +168,10 @@ func (p *Server) ServerInit() {
 func (p *Server) ServerShutdown() {
 	//默认调用Handler的Shutdown后再结束。
 	//如果连续按两次SIG_INT信号，则立即结束。
-waitLoop:
-	for {
-		//p.Logger.Sysf("wait for server handler[%s, %p] shutdown, send SIG_INT again to skip this step", p.Name, &p.Handler)
-		select {
-			case <-p.Handler.Shutdown():
-				break waitLoop
-			case <-time.After(1 * time.Second):
-				p.Logger.Sys("time out")
-				if (p.sigIntCount>1) {
-					break waitLoop
-				}
-		}
+	p.Logger.Sysf("wait for server handler[%s, %p] shutdown, send SIG_INT to skip this step", p.Name, &p.Handler)
+	select {
+		case <-p.Handler.Shutdown():
+		case <-p.sigIntC:
 	}
 
 	//server shutdown
@@ -202,7 +203,7 @@ func (p *Server) pluginServerShutdown(name string) {
 
 //处理退出、info信号
 func (p *Server) handleControlSignal() {
-	c := make(chan os.Signal, 1)
+	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGUSR1)
 
 	for true {
@@ -210,9 +211,7 @@ func (p *Server) handleControlSignal() {
 		switch s {
 		case syscall.SIGINT:
 			p.sigIntCount++
-			if p.sigIntCount==1 {
-				p.sigIntC<-true
-			}
+			p.sigIntC<-true
 		}
 	}
 }

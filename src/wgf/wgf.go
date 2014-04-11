@@ -112,3 +112,10 @@ func StartCliServer() {
 	pServer.Boot(*basedir, initConf())
 }
 
+//启动Socket服务: tcp or unixsocket
+func StartSocketServer() {
+	parseArgs()
+	pServer := sapi.NewSocketServer()
+	pServer.Boot(*basedir, initConf())
+}
+

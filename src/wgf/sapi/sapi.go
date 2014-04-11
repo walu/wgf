@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"net"
 	"net/http"
 	"runtime"
 	"runtime/debug"
 
-//	"wgf/lib/conf"
 	"wgf/lib/log"
 	"wgf/sapi/websocket"
 )
@@ -192,6 +192,20 @@ func NewCliSapi(pServer *Server) *Sapi {
 	s.Stdout = os.Stdout
 	s.Stderr = os.Stderr
 	s.Stdin = os.Stdin
+
+	return s
+}
+
+func NewSocketSapi(pServer *Server, conn net.Conn) *Sapi {
+	s := &Sapi{}
+	s.plugins = make(map[string]interface{})
+
+	s.server = pServer
+	s.Logger = pServer.Logger
+
+	s.Stdout = conn
+	s.Stderr = conn
+	s.Stdin = conn
 
 	return s
 }
