@@ -87,24 +87,28 @@ func initConf() *conf.Conf {
 //启动Http服务器
 func StartHttpServer() {
 	parseArgs()
-	pConf	:= initConf()
 	pServer := sapi.NewServer()
-	pServer.Boot(*basedir, pConf)
+	pServer.Boot(*basedir, initConf())
 }
 
 //启动Websocket服务器
 func StartWebSocketServer() {
 	parseArgs()
-	pConf	:= initConf()
 	pServer := sapi.NewWebsocketServer()
-	pServer.Boot(*basedir, pConf)
+	pServer.Boot(*basedir, initConf())
 }
 
 //启动Cli终端程序
 func StartCliServer() {
+	//set flags for cli
+	var action *string
+	action	 = flag.String("a", "index", "set the action name, index is default")
+
 	parseArgs()
-	pConf	:= initConf()
+
 	pServer := sapi.NewCliServer()
-	pServer.Boot(*basedir, pConf)
+	pServer.Handler.(*sapi.CliServerHandler).SetActionName(*action)
+
+	pServer.Boot(*basedir, initConf())
 }
 
