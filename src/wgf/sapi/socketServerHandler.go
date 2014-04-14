@@ -1,7 +1,6 @@
 package sapi
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"time"
@@ -77,27 +76,33 @@ func (p *SocketServerHandler) serveRequest(conn net.Conn) {
 
 	//close the conn
 	defer conn.Close()
+	var err error
 
-	if p.disabled {
-		return
+	var keepalive bool
+	keepalive = false
+
+	for true {
+		if p.disabled {
+			break
+		}
+
+		if p.currentChildren >= p.maxChildren {
+			p.pServer.Logger.Warningf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
+			return
+		}
+
+		p.currentChildren++
+		err = p.serveRequestEx(conn)
+		p.currentChildren--
+
+		if nil!=err || !keepalive {
+			break
+		}
 	}
-
-	if p.currentChildren >= p.maxChildren {
-		errorMsg := fmt.Sprintf("currentChildren has reached %d, please raise the wgf.sapi.maxChildren", p.currentChildren)
-		p.pServer.Logger.Warning(errorMsg)
-		return
-	}
-
-	//manage currentChildren
-	p.currentChildren++
-	defer func() { p.currentChildren-- }()
-
-	sapi := NewSocketSapi(p.pServer, conn)
-	defer sapi.Close()
-
-	c := make(chan int)
-	sapi.SetActionName("index")
-	go sapi.start(c)
-	<-c //request has been finishied
 }
 
+func (p *SocketServerHandler) serveRequestEx(conn net.Conn) error {
+	sapi := NewSocketSapi(p.pServer, conn)
+	defer sapi.Close()
+	return sapi.start(nil)
+}

@@ -119,3 +119,8 @@ func StartSocketServer() {
 	pServer.Boot(*basedir, initConf())
 }
 
+func StartServerEx(creator func()*sapi.Server) {
+	parseArgs()
+	pServer := creator()
+	pServer.Boot(*basedir, initConf())
+}

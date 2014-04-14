@@ -42,6 +42,9 @@ func (p *HttpServerHandler) shutdownWorker(c chan bool){
 
 
 func (p *HttpServerHandler) Serve(pServer *Server) {
+	//notifyHandlerFinished
+	defer pServer.NotifyHandlerFinished()
+
 	p.pServer = pServer
 	p.maxChildren = pServer.Conf.Int64("wgf.sapi.maxChildren", 1000)
 
@@ -59,9 +62,6 @@ func (p *HttpServerHandler) Serve(pServer *Server) {
 	httpServer := &http.Server{}
 	httpServer.Handler = p
 	httpServer.Serve(p.Ln)
-
-	//notifyHandlerFinished
-	pServer.NotifyHandlerFinished()
 }
 
 func (p *HttpServerHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {

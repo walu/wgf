@@ -86,7 +86,9 @@ func (p *Sapi) RequestURI() string {
 	return p.Req.URL.Path
 }
 
-func (p *Sapi) start(c chan int) {
+func (p *Sapi) start(c chan int) error {
+	var err error
+
 	p.requestChannel = c
 	defer p.ExitRequest()
 
@@ -107,18 +109,18 @@ func (p *Sapi) start(c chan int) {
 	action, actionErr := GetAction(p.actionName)
 	if nil != actionErr {
 		p.Logger.Debug("ROUTER[" + p.RequestURI() + "] " + actionErr.Error())
-		return
+		return actionErr
 	}
 
 	action.SetSapi(p)
 	if !action.UseSpecialMethod() {
-		action.Execute()
+		err = action.Execute()
 	} else {
 		switch p.Req.Method {
 		case "GET":
-			action.DoGet()
+			err =action.DoGet()
 		case "POST":
-			action.DoPost()
+			err = action.DoPost()
 		}
 	}
 
@@ -126,6 +128,7 @@ func (p *Sapi) start(c chan int) {
 	for i := len(p.server.PluginOrder) - 1; i >= 0; i-- {
 		p.pluginRequestShutdown(p.server.PluginOrder[i])
 	}
+	return err
 }
 
 func (p *Sapi) pluginRequestInit(name string) {
