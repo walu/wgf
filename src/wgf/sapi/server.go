@@ -1,3 +1,7 @@
+// Copyright 2014 The Wgf Authors. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package sapi
 
 import (
@@ -5,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-//	"time"
 
 	"wgf/lib/conf"
 	"wgf/lib/log"
@@ -24,7 +27,6 @@ type ServerHandler interface {
 }
 
 type Server struct {
-	//base info
 	Id int
 	Name string
 	FullName string
@@ -61,6 +63,7 @@ func newServer() *Server {
 
 }
 
+//get server for http apps
 func NewServer() *Server {
 	p := newServer()
 	p.Id = IdHttp
@@ -70,7 +73,7 @@ func NewServer() *Server {
 	return p
 }
 
-//Get Server For Websocket apps.
+//get server for websocket apps.
 func NewWebsocketServer() *Server {
 	p := newServer()
 	p.Id = IdWebsocket
@@ -80,6 +83,7 @@ func NewWebsocketServer() *Server {
 	return p
 }
 
+//get server for cli programe
 func NewCliServer() *Server {
 	p := newServer()
 	p.Id = IdCli
@@ -89,6 +93,7 @@ func NewCliServer() *Server {
 	return p
 }
 
+//get server for socket apps
 func NewSocketServer() *Server {
 	p := newServer()
 	p.Id = IdSocket
