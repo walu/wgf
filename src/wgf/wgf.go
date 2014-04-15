@@ -87,7 +87,7 @@ func initConf() *conf.Conf {
 //启动Http服务器
 func StartHttpServer() {
 	parseArgs()
-	pServer := sapi.NewServer()
+	pServer := sapi.NewHttpServer()
 	pServer.Boot(*basedir, initConf())
 }
 

@@ -46,6 +46,7 @@ type Sapi struct {
 	requestChannel chan int
 }
 
+//Set the actionName
 func (p *Sapi) SetActionName(name string) {
 	p.actionName = name
 }
@@ -65,7 +66,11 @@ func (p *Sapi) IsClosed() bool {
 	return p.closed
 }
 
-//输出内容给客户端，第一次输出之前会先输出header信息
+/*
+输出内容给客户端。
+
+对于HttpServer，第一次输出之前会先输出header信息
+*/
 func (p *Sapi) Print(val interface{}) (int, error) {
 	return fmt.Fprint(p.Stdout, val)
 }
@@ -153,7 +158,7 @@ func (p *Sapi) pluginRequestShutdown(name string) {
 	}
 }
 
-func NewSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi {
+func NewHttpSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *Sapi {
 	s := &Sapi{}
 	s.plugins = make(map[string]interface{})
 

@@ -1,3 +1,7 @@
+// Copyright 2014 The Wgf Authors. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package sapi
 
 import (
@@ -23,13 +27,22 @@ type ActionInterface interface {
 //存储已注册的action
 var actionMap map[string]func() ActionInterface
 
-//默认action，用于简化app实现逻辑，app在实现自己的action时，可以直接包含此action。
+/*
+默认action，用于简化app实现逻辑，app在实现自己的action时，可以直接包含此action。
+	import "wgf/sapi"
+	type IndexAction struct {
+		sapi.Action
+	}
+
+	func (p *IndexAction) DoGet() error {
+	}
+*/
 type Action struct {
 	RunMode int
 	Sapi    *Sapi
 }
 
-//设置sapi实例
+//设置此Action对应的sapi实例
 func (p *Action) SetSapi(s *Sapi) {
 	p.Sapi = s
 }

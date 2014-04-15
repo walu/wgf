@@ -1,3 +1,7 @@
+// Copyright 2014 The Wgf Authors. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package sapi
 
 import (
@@ -82,7 +86,7 @@ func (p *HttpServerHandler) ServeHTTP(res http.ResponseWriter, req *http.Request
 	defer func() { p.currentChildren-- }()
 	p.currentChildren++
 
-	sapi := NewSapi(p.pServer, res, req)
+	sapi := NewHttpSapi(p.pServer, res, req)
 	c := make(chan int)
 	go sapi.start(c)
 	select {

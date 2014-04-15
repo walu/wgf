@@ -48,7 +48,8 @@ type Server struct {
 
 }
 
-func newServer() *Server {
+//创建一个Server模版。
+func NewServer() *Server {
 	p := &Server{}
 	p.Logger = log.NewLogger()
 	p.LoggerStdout = log.NewLogger()
@@ -64,7 +65,7 @@ func newServer() *Server {
 }
 
 //get server for http apps
-func NewServer() *Server {
+func NewHttpServer() *Server {
 	p := newServer()
 	p.Id = IdHttp
 	p.Name = "Http"
@@ -103,6 +104,7 @@ func NewSocketServer() *Server {
 	return p
 }
 
+//告知Server，Handler已经执行完毕。Server将立即启动Shutdown流程
 func (p *Server) NotifyHandlerFinished() {
 	p.handlerFinishedC <- true
 }
@@ -115,6 +117,17 @@ func (p *Server) Confdir() string {
 	return p.basedir + "/conf/"
 }
 
+/*
+启动Server，主进程将阻塞住处理任务，直到接收到SIG_INT信号或者NotifyHandlerFinished被调用。
+
+流程：
+
+1. call ServerInit
+
+2. execute Handler's logic
+
+3. call ServerShutdown
+*/
 func (p *Server) Boot(basedir string, conf *conf.Conf) {
 	p.basedir = basedir
 	p.Conf = conf
@@ -132,6 +145,13 @@ func (p *Server) Boot(basedir string, conf *conf.Conf) {
 	p.ServerShutdown()
 }
 
+/*
+执行ServerInit流程
+
+1. 各种初始化。
+
+2. 依次调用各个扩展的HookPluginServerInit方法，如果方法返回非nil值，将产生一个panic终止server运行。
+*/
 func (p *Server) ServerInit() {
 	var logWriter io.Writer
 	var logFile string
@@ -170,6 +190,15 @@ func (p *Server) ServerInit() {
 	p.Logger.Sys("ServerInit Done")
 }
 
+/*
+执行shutdown流程
+
+对于SIG_INT信号：
+
+如果第一次发送，系统启动shutdown流程，调用Handler的Shutdown方法。
+
+如果第二次发送，系统将跳过Handler处理流程，直接执行ServerShutdown流程。
+*/
 func (p *Server) ServerShutdown() {
 	//默认调用Handler的Shutdown后再结束。
 	//如果连续按两次SIG_INT信号，则立即结束。
