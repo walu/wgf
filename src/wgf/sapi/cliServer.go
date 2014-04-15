@@ -24,13 +24,14 @@ func (p *CliServerHandler) Shutdown() chan bool {
 }
 
 func (p *CliServerHandler) Serve(pServer *Server) {
-	p.pServer = pServer
+	defer p.pServer.NotifyHandlerFinished()
 
+	p.pServer = pServer
 	sapi := NewCliSapi(p.pServer)
+
 	sapi.SetActionName(p.actionName)
 	c := make(chan int)
 	go sapi.start(c)
 	<-c
-	p.pServer.NotifyHandlerFinished()
 }
 

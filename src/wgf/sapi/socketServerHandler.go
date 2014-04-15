@@ -104,5 +104,8 @@ func (p *SocketServerHandler) serveRequest(conn net.Conn) {
 func (p *SocketServerHandler) serveRequestEx(conn net.Conn) error {
 	sapi := NewSocketSapi(p.pServer, conn)
 	defer sapi.Close()
-	return sapi.start(nil)
+
+	c := make(chan int)
+	go sapi.start(c)
+	<-c
 }
