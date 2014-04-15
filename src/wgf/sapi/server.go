@@ -66,7 +66,7 @@ func NewServer() *Server {
 
 //get server for http apps
 func NewHttpServer() *Server {
-	p := newServer()
+	p := NewServer()
 	p.Id = IdHttp
 	p.Name = "Http"
 	p.FullName = "Wgf Http Server"
@@ -76,7 +76,7 @@ func NewHttpServer() *Server {
 
 //get server for websocket apps.
 func NewWebsocketServer() *Server {
-	p := newServer()
+	p := NewServer()
 	p.Id = IdWebsocket
 	p.Name = "Websocket"
 	p.FullName = "Wgf Websocket Server"
@@ -86,7 +86,7 @@ func NewWebsocketServer() *Server {
 
 //get server for cli programe
 func NewCliServer() *Server {
-	p := newServer()
+	p := NewServer()
 	p.Id = IdCli
 	p.Name = "Cli"
 	p.FullName = "Wgf Cli Programe"
@@ -96,7 +96,7 @@ func NewCliServer() *Server {
 
 //get server for socket apps
 func NewSocketServer() *Server {
-	p := newServer()
+	p := NewServer()
 	p.Id = IdSocket
 	p.Name = "Socket Server"
 	p.FullName = "Wgf Socket Server"
@@ -185,7 +185,11 @@ func (p *Server) ServerInit() {
 	//server init
 	p.PluginOrder = GetPluginOrder(p)
 	for _, name := range p.PluginOrder {
-		p.pluginServerInit(name)
+		err = p.pluginServerInit(name)
+		if nil != err {
+			p.Logger.Warning("ServerInitError ", err)
+			panic(err)
+		}
 	}
 	p.Logger.Sys("ServerInit Done")
 }
@@ -215,24 +219,26 @@ func (p *Server) ServerShutdown() {
 	p.Logger.Sys("Server Shutdown\n")
 }
 
-func (p *Server) pluginServerInit(name string) {
+func (p *Server) pluginServerInit(name string) error {
 	info, ok := pluginMap[name]
 	if ok {
 		p.Logger.Info("PluginServerInit "+name)
 		if nil != info.HookPluginServerInit {
-			info.HookPluginServerInit(p)
+			return info.HookPluginServerInit(p)
 		}
 	}
+	return nil
 }
 
-func (p *Server) pluginServerShutdown(name string) {
+func (p *Server) pluginServerShutdown(name string) error {
 	info, ok := pluginMap[name]
 	if ok {
 		p.Logger.Info("PluginServerShutdown "+name)
 		if nil != info.HookPluginServerShutdown {
-			info.HookPluginServerShutdown(p)
+			return info.HookPluginServerShutdown(p)
 		}
 	}
+	return nil
 }
 
 //处理退出、info信号

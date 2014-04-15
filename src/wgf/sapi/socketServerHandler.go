@@ -105,7 +105,9 @@ func (p *SocketServerHandler) serveRequestEx(conn net.Conn) error {
 	sapi := NewSocketSapi(p.pServer, conn)
 	defer sapi.Close()
 
+	var err error
 	c := make(chan int)
-	go sapi.start(c)
+	go func(){err = sapi.start(c)}()
 	<-c
+	return err
 }
