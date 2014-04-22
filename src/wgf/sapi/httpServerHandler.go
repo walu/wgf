@@ -55,8 +55,10 @@ func (p *HttpServerHandler) Serve(pServer *Server) {
 	var tcpListen string
 	var err error
 
-	tcpListen = pServer.Conf.String("wgf.sapi.tcpListen", "")
-	p.Ln, err = net.Listen("tcp", tcpListen)
+	lnet := pServer.Conf.String("wgf.sapi.ListenNet", "")
+	laddr := pServer.Conf.String("wgf.sapi.ListenLaddr", "")
+
+	p.Ln, err = net.Listen(lnet, laddr)
 	if nil != err {
 		pServer.Logger.Fatalf("cannot listen to %s, error: %s", tcpListen, err.Error())
 		return //exit
