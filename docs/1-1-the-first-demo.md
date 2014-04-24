@@ -63,7 +63,9 @@ func init() {
 
 修改conf/wgf.ini里的参数，调整成合适的值。
 
-wgf.sapi.tcpListen = 127.0.0.1:8080
+; net, host:port for wgf to be listend
+wgf.sapi.ListenNet = tcp
+wgf.sapi.ListenLaddr = 127.0.0.1:8080
 
 > 正式应用时，架构设计上应该在前面加一层nginx。
 > 为了简便，这里省去了，直接请求。
