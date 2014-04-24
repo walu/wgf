@@ -14,6 +14,7 @@ import (
 	"runtime/debug"
 
 	"wgf/lib/log"
+	"wgf/lib/conf"
 	"wgf/sapi/websocket"
 )
 
@@ -23,6 +24,9 @@ type Sapi struct {
 
 	//Log
 	Logger *log.Logger
+
+	//conf
+	Conf *conf.Conf
 
 	//by golang http package
 	//不要用这两个属性，不保证兼容性，一旦解决，立马变为不再导出。
@@ -164,6 +168,7 @@ func NewHttpSapi(pServer *Server, res http.ResponseWriter, req *http.Request) *S
 
 	s.server = pServer
 	s.Logger = pServer.Logger
+	s.Conf	 = pServer.Conf
 	s.Res = res
 	s.Req = req
 
@@ -180,6 +185,7 @@ func NewWebSocketSapi(pServer *Server, conn *websocket.Conn) *Sapi {
 
 	s.server = pServer
 	s.Logger = pServer.Logger
+	s.Conf	 = pServer.Conf
 	s.Res = nil
 	s.Req = conn.Request()
 
@@ -196,7 +202,7 @@ func NewCliSapi(pServer *Server) *Sapi {
 
 	s.server = pServer
 	s.Logger = pServer.Logger
-
+	s.Conf	 = pServer.Conf
 	s.Stdout = os.Stdout
 	s.Stderr = os.Stderr
 	s.Stdin = os.Stdin
@@ -210,6 +216,7 @@ func NewSocketSapi(pServer *Server, conn net.Conn) *Sapi {
 
 	s.server = pServer
 	s.Logger = pServer.Logger
+	s.Conf	 = pServer.Conf
 
 	s.Stdout = conn
 	s.Stderr = conn
