@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"wgf/sapi"
+	"wgf/plugin/router"
 )
 
 //view自定义模版函数
@@ -137,6 +138,18 @@ func viewFuncWgfInclude(viewName string, data interface{}) (string, error) {
 	return "", nil
 }
 
+func viewFuncWgfUrl(actionName string, args ...interface{}) (string, error){
+	var urlArgs map[string]string
+	urlArgs = make(map[string]string)
+
+	lenargs := len(args)
+	for i:=0; i<lenargs; i+=2 {
+		key := fmt.Sprintf("%v", args[i])
+		urlArgs[key] = fmt.Sprintf("%v", args[i+1])
+	}
+	return router.Url(actionName, urlArgs), nil
+}
+
 func SetViewDir(viewDir string) {
 	confViewDir = viewDir
 }
@@ -186,6 +199,7 @@ func init() {
 
 	viewFuncMap = map[string]interface{}{
 		"wgfInclude": viewFuncWgfInclude,
+		"wgfUrl": viewFuncWgfUrl,
 	}
 
 	info := sapi.PluginInfo{}

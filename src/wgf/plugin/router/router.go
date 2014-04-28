@@ -27,6 +27,10 @@ type Router struct {
 }
 
 func (r *Router) Url(action string, param map[string]string) string {
+	return Url(action, param)
+}
+
+func Url(action string, param map[string]string) string {
 	re, err := actionToUrl(action, param)
 	if nil != err {
 		re = "/?r=" + action
@@ -36,6 +40,7 @@ func (r *Router) Url(action string, param map[string]string) string {
 	}
 	return re
 }
+
 
 func serverInit(pServer *sapi.Server) error {
 	confDefaultAction = pServer.Conf.String("wgf.router.defaultAction", "index")
