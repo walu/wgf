@@ -1,3 +1,7 @@
+// Copyright 2014 The Wgf Authors. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package view
 
 import (
@@ -123,11 +127,14 @@ func viewFuncWgfInclude(viewName string, data interface{}) (string, error) {
 
 	tpl, err = getTemplate(viewName)
 	if nil != err {
-		return "", err
+		return "", errors.New(err.Error() + " "  + viewName)
 	}
 
 	err = tpl.Execute(stdoutWriter.(io.Writer), data)
-	return "", err
+	if nil != err {
+		return "", errors.New(err.Error() + " " + viewName)
+	}
+	return "", nil
 }
 
 func SetViewDir(viewDir string) {
@@ -152,7 +159,11 @@ func serverInit(pServer *sapi.Server) error {
 		confViewDir,
 		func(path string, info os.FileInfo, err error) error {
 			if !info.IsDir() {
-				return initTemplate(path)
+				e := initTemplate(path)
+				if nil != e {
+					pServer.Logger.Warning("view_init_error "+e.Error() + " " + path)
+					return e
+				}
 			}
 			return nil
 		},
