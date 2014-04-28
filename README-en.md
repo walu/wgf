@@ -20,12 +20,12 @@ wgf offers a flexible extension mechanism. I takes design ideas from PHP, and ad
 Package dependencies (From top to bottom):
 
 * app
-* action
-* model
+ * action
+ * model
 * wgf
-* plugin
-* sapi
-* lib
+ * plugin
+ * sapi
+ * lib
 
 The dependencies go from top to bottom (the upper levels depend on the lower levels, while the lower levels do not depend on the upper levels).
 
