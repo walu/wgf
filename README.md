@@ -1,3 +1,5 @@
+[[English Documentation](<README-en.md>)]
+
 # Wgf 文档
 
 > * 源码: http://github.com/walu/wgf
