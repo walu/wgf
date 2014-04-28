@@ -132,4 +132,4 @@ func init() {
 
 现在把url改为：http://127.0.0.1:8080/?r=guess 再试试？
 
-默认情况下，wgf/plugin/router 通过url中的r参数来进行路由。
+> 默认情况下，wgf/plugin/router 通过url中的r参数来进行路由。
