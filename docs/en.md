@@ -75,24 +75,24 @@ Create a file : $workspace/app/action/index.go
 package action
 
 import (
-    "wgf/sapi"
+	"wgf/sapi"
 )
 
 
 //Declare IndexAction
 type IndexAction struct {
-    sapi.Action / / embed this Action, save yourself works
+	sapi.Action //embed this Action, save yourself works
 }
 
 // You can write the logic in the Execute method .
 // and Can also be written in DoGet \ DoPost method in .
 func (p * IndexAction) Execute () {
-    p.Sapi.Println ("hello world!")
+	p.Sapi.Println ("hello world!")
 }
 
 // Register IndexAction to wgf
 func init () {
-    sapi.RegisterAction ("index", func () sapi.ActionInterface {return & IndexAction {}})
+	sapi.RegisterAction ("index", func()sapi.ActionInterface{return & IndexAction{}})
 }
 ````
 
@@ -108,12 +108,12 @@ Create a file : $workspace/main.go
 package main
 
 import (
-    _ "App/action" // This is not a good habit to introduce temporary , so tentatively
-    "wgf"
+	_ "app/action" // This is not a good habit to introduce temporary , so tentatively
+	"wgf"
 )
 
 func main () {
-    wgf.StartHttpServer ()
+	wgf.StartHttpServer ()
 }
 ````
 
