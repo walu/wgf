@@ -11,7 +11,7 @@
 
 所以，在使用wgf时候，请自行下载到本地，并copy到项目中，或将wgf目录添加到GOPATH中。
 
-```shell
+```bash
 
 #在project/src下放置自己项目的代码
 mkdir -p project/src

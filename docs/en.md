@@ -52,7 +52,7 @@ The proposed structure of the sourcecode:
 		* model/
 		* plugin/ ( If necessary )
 		* lib/ ( If necessary )
-		* wgf/ (wgf can copy over, you can come through the introduction GOPATH )
+	* wgf/ (wgf can copy over, you can come through the introduction GOPATH )
 
 ## 2 Writing http servers with wgf
 
