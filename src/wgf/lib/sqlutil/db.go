@@ -74,6 +74,9 @@ func WhereMapToSlice(where map[string]interface{}) []interface{} {
 }
 
 /*
+
+Simple select
+
 	p.Select("wiki")
 	select * from wiki
 
