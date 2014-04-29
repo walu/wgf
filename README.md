@@ -1,6 +1,9 @@
-[[English Documentation](<README-en.md>)]
+## 文档(Documentation)
 
-# Wgf 文档
+* [中文](<docs/cn.md>)
+* [English](<docs/en.md>)
+
+# Wgf
 
 > * 源码: http://github.com/walu/wgf
 > * 微博: http://weibo.com/walu
@@ -43,31 +46,3 @@ Package dependencies(自上至下):
 	* router, 根据路由规则分发请求、生成URL等。
 	* view, 管理模版文件，无重启更新模版。
 
-## 使用介绍(整理中)
-
-> 类库文档，大家可以使用godoc。
-> 这里的介绍是为了说一些godoc表达不了的。
-
-* 介绍
-	* [入门Demo](<docs/1-1-the-first-demo.md>)
-* 核心扩展介绍
-	* httpparam
-		* 获取Get\Post参数。
-		* 处理文件上传。
-	* session
-		* 处理session。
-		* 更换session的保存方式。
-	* cookie
-		* 处理Cookie。
-	* header
-	* router
-		* 设置路由规则。
-		* URL生成。
-		* 路由性能
-	* view
-		* 基本使用。
-		* view配置参数说明。
-
-* 进阶介绍
-	* wgf架构介绍
-	* wgf扩展开发

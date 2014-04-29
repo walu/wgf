@@ -1,3 +1,8 @@
+## 文档(Documentation)
+
+* [中文](<docs/cn.md>)
+* [English](<docs/en.md>)
+
 # Wgf Documentation
 
 > * Source: http://github.com/walu/wgf
@@ -41,31 +46,3 @@ The dependencies go from top to bottom (the upper levels depend on the lower lev
 * router, distribute requests according to routing rules, generate URL, etc.
 * view, manage template files, update templates without reboot.
 
-## Usage Introduction (In progress)
-
-> For documentation, you may refer to the godoc
-> The introduction here is to note some things that do not fit into the godocs.
-
-* Introduction
-	* [Introductory Demo](<docs/1-1-the-first-demo.md>)
-* Core extensions
-	* httpparam
-		* Access to Get / Post parameters.
-		* Handling of file uploads.
-	* session
-		* Handles sessions.
-		* Replacing session preservation
-	* cookie
-		* Manages cookies.
-	* header
-	* router
-		* Routing rules
-		* URL generation
-		* Setting of route properties
-	* view
-		* Basic usage
-		* View configuration parameters
-
-* Advanced Introduction
-	* wgf architecture introduction
-	* wgf extension development
