@@ -13,8 +13,7 @@
 Hello，[wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的的编程框架。目标为提供一个尽可能统一的编程环境，提高工作效率。
 
 目前，wgf已完成对http、cli、socket、websocket的支持，其中socket、websocket的还比较初级。
-
-wgf基于扩展机制，本身也内嵌了httpparam、双向路由、动态模版等扩展，将在此文档中一一介绍。
+wgf基于扩展机制，本身也内嵌了httpparam、双向路由、动态模版等扩展，将在文档中一一介绍。
 
 > **强烈建议大家先浏览一下app目录源码（一个index＋login事例），即可对wgf有个大体的了解。**
 
