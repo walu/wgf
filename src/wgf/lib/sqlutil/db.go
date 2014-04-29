@@ -2,6 +2,7 @@ package sqlutil
 
 import (
 	"database/sql"
+	"strings"
 	"errors"
 	"fmt"
 )
@@ -119,6 +120,30 @@ func (p *DB) Delete(table string, args ...interface{}) (sql.Result, error) {
 	}
 
 	s = "DELETE FROM " + table + sqlWhere
+	return p.Exec(s, queryArgs...)
+}
+
+func (p *DB) Insert(table string, row map[string]interface{}) (sql.Result, error) {
+	//INSERT INTO TABLE(FILEDS, FIELDS, FIELDS) VALUES()
+	var s string
+	var queryArgs []interface{}
+	var fields []string
+	var holders []string
+
+	l := len(row)
+	queryArgs = make([]interface{}, l)
+	fields = make([]string, l)
+	holders = make([]string, l)
+	s = "INSERT INTO " + table
+
+	i := 0
+	for k, v := range row {
+		fields[i] = k
+		holders[i] = "?"
+		queryArgs[i] = v
+	}
+
+	s = fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(fields, ", "), strings.Join(holders, ", "))
 	return p.Exec(s, queryArgs...)
 }
 
