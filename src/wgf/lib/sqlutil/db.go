@@ -28,7 +28,8 @@ func NewDB(db *sql.DB) *DB {
 }
 
 //create DB, master and slaves
-//INSERT\Delete\Update use master
+//
+//INSERT\Delete\Update use master,
 //Select use slaves randomly
 func NewRWDB(master *sql.DB, slaves ...*sql.DB) *DB {
 	ret := new(DB)
@@ -39,7 +40,7 @@ func NewRWDB(master *sql.DB, slaves ...*sql.DB) *DB {
 
 /*
 
-help you converting map args to slice args
+help you converting map args to simple where args(eq relation only)
 
 Why slice was used default?
 
@@ -109,6 +110,11 @@ func (p *DB) Select(table string, args ...interface{}) (*Rows, error) {
 	return p.Query(s, queryArgs...)
 }
 
+/*
+Delete rows
+
+args only support eq
+*/
 func (p *DB) Delete(table string, args ...interface{}) (sql.Result, error) {
 	var s, sqlWhere string
 	var queryArgs []interface{}
@@ -123,6 +129,9 @@ func (p *DB) Delete(table string, args ...interface{}) (sql.Result, error) {
 	return p.Exec(s, queryArgs...)
 }
 
+/*
+Insert rows
+*/
 func (p *DB) Insert(table string, row map[string]interface{}) (sql.Result, error) {
 	//INSERT INTO TABLE(FILEDS, FIELDS, FIELDS) VALUES()
 	var s string
@@ -199,9 +208,11 @@ func (p *DB) Exec(s string, args ...interface{}) (sql.Result, error) {
 	return p.oriMaster.Exec(s, args...)
 }
 
-
-
 func (p *DB) Close() error {
+	p.oriMaster.Close()
+	for i, _ := range p.oriSlaves {
+		p.oriSlaves[i].Close()
+	}
 	return nil
 }
 
