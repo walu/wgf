@@ -141,9 +141,40 @@ func (p *DB) Insert(table string, row map[string]interface{}) (sql.Result, error
 		fields[i] = k
 		holders[i] = "?"
 		queryArgs[i] = v
+		i++
 	}
 
 	s = fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(fields, ", "), strings.Join(holders, ", "))
+	return p.Exec(s, queryArgs...)
+}
+
+//update table
+//whereArgs only support simple eq relation
+func (p *DB) Update(table string, row map[string]interface{}, whereArgs ...interface{}) (sql.Result, error) {
+	var s string
+	var queryArgs []interface{}
+	var fields []string
+
+	l := len(row)
+	queryArgs = make([]interface{}, l)
+	fields = make([]string, l)
+
+	i := 0
+	for k, v := range row {
+		fields[i] = k + " = ? "
+		queryArgs[i] = v
+		i++
+	}
+
+	sqlWhere, tmpArgs, e := parseWhereArgs(whereArgs)
+	if nil != e {
+		return nil, e
+	}
+	queryArgs = append(queryArgs, tmpArgs...)
+
+
+	s = fmt.Sprintf("UPDATE  %s SET %s %s", table, strings.Join(fields, ", "), sqlWhere)
+	fmt.Println(s, queryArgs)
 	return p.Exec(s, queryArgs...)
 }
 
