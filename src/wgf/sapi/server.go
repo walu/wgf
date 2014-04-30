@@ -26,6 +26,7 @@ type ServerHandler interface {
 	Shutdown() chan bool
 }
 
+
 type Server struct {
 	Id int
 	Name string
@@ -169,6 +170,7 @@ func (p *Server) ServerInit() {
 			logFile = "stdout"
 		}
 	}
+
 	p.Logger.SetMinLogLevelName(p.Conf.String("wgf.sapi.minLogLevel", "info"))
 	p.Logger.SetLogWriter(logWriter)
 	log.ConfLogWriter = logWriter
@@ -178,6 +180,9 @@ func (p *Server) ServerInit() {
 	p.Logger.SetTimeLocation(timezone)
 	p.LoggerStdout.SetTimeLocation(timezone)
 	log.ConfTimeLocationName = timezone
+
+	//set the global default Logger
+	log.DefaultLogger = p.Logger
 
 	//处理退出、info信号
 	go p.handleControlSignal()

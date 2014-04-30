@@ -48,6 +48,7 @@ type Sapi struct {
 
 	//about runtime
 	requestChannel chan int
+	actionChannel chan int
 }
 
 //Set the actionName
@@ -58,7 +59,7 @@ func (p *Sapi) SetActionName(name string) {
 //中止当前请求，之后的代码不会再执行。但plugin的requestShutdown会执行。
 //建议只在action逻辑中执行。
 func (p *Sapi) ExitRequest() {
-	p.requestChannel <- 1
+	p.actionChannel <- 1
 	runtime.Goexit()
 }
 
@@ -96,10 +97,14 @@ func (p *Sapi) RequestURI() string {
 }
 
 func (p *Sapi) start(c chan int) error {
+
+	p.Logger.Debug("sapi_start uri[" + p.RequestURI() + "] ")
+
+	defer func(){c<-1}()
+
 	var err error
 
-	p.requestChannel = c
-	defer p.ExitRequest()
+	p.actionChannel = make(chan int)
 
 	defer func() {
 		r := recover()
@@ -122,16 +127,23 @@ func (p *Sapi) start(c chan int) error {
 	}
 
 	action.SetSapi(p)
-	if !action.UseSpecialMethod() {
-		err = action.Execute()
-	} else {
-		switch p.Req.Method {
-		case "GET":
-			err =action.DoGet()
-		case "POST":
-			err = action.DoPost()
+
+	//action will be ExitRequest
+	//so open a new thread
+	go func() {
+		if !action.UseSpecialMethod() {
+			err = action.Execute()
+		} else {
+			switch p.Req.Method {
+			case "GET":
+				err =action.DoGet()
+			case "POST":
+				err = action.DoPost()
+			}
 		}
-	}
+		p.actionChannel <- 1
+	}()
+	<-p.actionChannel
 
 	//request shutdown
 	for i := len(p.server.PluginOrder) - 1; i >= 0; i-- {

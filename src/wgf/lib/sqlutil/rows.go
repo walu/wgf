@@ -10,46 +10,66 @@ import (
 	"errors"
 )
 
+/*
+Rows is instead of sql.Rows
+
+Rows will get all the result into memory of sql.Rows, 
+preventing you forget to call the Close() method, the reason let db conn can't be released.
+*/
 type Rows struct {
-	rows *sql.Rows
+	index int
+	dataLen int
 	currentData map[string]string
-	errorList []error
+	colnames []string
+
+	data []map[string]string
 }
 
-func NewRows(rs *sql.Rows) *Rows {
+/*
+Rows will get all the result into memory of sql.Rows, 
+preventing you forget to call the Close() method, the reason let db conn can't be released.
+*/
+func NewRows(rs *sql.Rows) (*Rows, error) {
 	if nil == rs {
 		rs = new(sql.Rows)
 	}
+	defer rs.Close()
+
+	var err error
+	var tmp map[string]string
 
 	ret := &Rows{}
 	ret.currentData = make(map[string]string)
-	ret.errorList = make([]error, 0)
-	ret.rows = rs
-	return ret
+	ret.data = make([]map[string]string, 0)
+	ret.colnames, err = rs.Columns()
+	if nil != err {
+		return nil, err
+	}
+
+	for rs.Next() {
+		tmp, err = fetchMap(rs)
+		if nil != err {
+			return nil, err
+		}
+
+		ret.data = append(ret.data, tmp)
+		ret.dataLen++
+	}
+	return ret, nil
 }
 
 func (rs *Rows) Next() bool {
-	var ret bool
-	if rs.rows.Next() {
-		var err error
-		rs.currentData, err = fetchMap(rs.rows)
-		if nil == err {
-			ret = true
-		}
+	if rs.index>=rs.dataLen {
+		return false
 	}
-	return ret
+
+	rs.currentData = rs.data[rs.index]
+	rs.index++
+	return true
 }
 
-func (rs *Rows) Close() error {
-	return rs.rows.Close()
-}
-
-func (rs *Rows) Columns() ([]string, error) {
-	return rs.rows.Columns()
-}
-
-func (rs *Rows) Err() error {
-	return rs.rows.Err()
+func (rs *Rows) Columns() []string {
+	return rs.colnames
 }
 
 func (rs *Rows) FetchInt64(col string) (int64, error) {

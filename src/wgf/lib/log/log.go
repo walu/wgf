@@ -27,6 +27,9 @@ var (
 	ConfMinLogLevel = 2
 )
 
+//wgf server will replace it when server init
+var DefaultLogger *Logger
+
 type Logger struct {
 	timeLayout string
 	timeLocation *time.Location
@@ -185,5 +188,6 @@ func (l Logger) outputf(level string, format string, v ...interface{}) {
 
 func init() {
 	ConfLogWriter = os.Stdout
+	DefaultLogger = NewLogger()
 }
 

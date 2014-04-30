@@ -9,6 +9,8 @@ import (
 	"strings"
 	"errors"
 	"fmt"
+
+	"wgf/lib/log"
 )
 
 var (
@@ -187,7 +189,6 @@ func (p *DB) Update(table string, row map[string]interface{}, whereArgs ...inter
 
 
 	s = fmt.Sprintf("UPDATE  %s SET %s %s", table, strings.Join(fields, ", "), sqlWhere)
-	fmt.Println(s, queryArgs)
 	return p.Exec(s, queryArgs...)
 }
 
@@ -199,13 +200,16 @@ func (p *DB) Update(table string, row map[string]interface{}, whereArgs ...inter
 	......
 */
 func (p *DB) Query(s string, args ...interface{}) (*Rows, error) {
+	log.DefaultLogger.Debug("query_sql_start ", s, args)
 	rs, err := p.oriMaster.Query(s, args...)
+	log.DefaultLogger.Debug("query_sql_done ", s, args, err)
 	if nil != err {
 		body := fmt.Sprintf("%s err:%v sql:%s args:%v", errDbQuery, err, s, args)
-		log(body)
+		log.DefaultLogger.Warning(body)
 		return nil, errors.New(body)
 	}
-	return NewRows(rs), nil
+
+	return NewRows(rs)
 }
 
 func (p *DB) Exec(s string, args ...interface{}) (sql.Result, error) {
