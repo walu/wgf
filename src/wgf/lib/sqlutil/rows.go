@@ -58,6 +58,10 @@ func NewRows(rs *sql.Rows) (*Rows, error) {
 	return ret, nil
 }
 
+func (rs *Rows) NumRows() int {
+	return rs.dataLen
+}
+
 func (rs *Rows) Next() bool {
 	if rs.index>=rs.dataLen {
 		return false

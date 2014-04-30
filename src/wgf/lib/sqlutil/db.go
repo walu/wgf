@@ -6,6 +6,7 @@ package sqlutil
 
 import (
 	"database/sql"
+	"math/rand"
 	"strings"
 	"errors"
 	"fmt"
@@ -27,7 +28,6 @@ type DB struct {
 //create DB
 func NewDB(db *sql.DB) *DB {
 	ret := new(DB)
-
 	ret.oriMaster = db
 	ret.oriSlaves = []*sql.DB{db}
 	return ret
@@ -201,7 +201,7 @@ func (p *DB) Update(table string, row map[string]interface{}, whereArgs ...inter
 */
 func (p *DB) Query(s string, args ...interface{}) (*Rows, error) {
 	log.DefaultLogger.Debug("query_sql_start ", s, args)
-	rs, err := p.oriMaster.Query(s, args...)
+	rs, err := p.db(s[0:6]).Query(s, args...)
 	log.DefaultLogger.Debug("query_sql_done ", s, args, err)
 	if nil != err {
 		body := fmt.Sprintf("%s err:%v sql:%s args:%v", errDbQuery, err, s, args)
@@ -213,7 +213,7 @@ func (p *DB) Query(s string, args ...interface{}) (*Rows, error) {
 }
 
 func (p *DB) Exec(s string, args ...interface{}) (sql.Result, error) {
-	return p.oriMaster.Exec(s, args...)
+	return p.db(s[0:6]).Exec(s, args...)
 }
 
 func (p *DB) Close() error {
@@ -224,8 +224,13 @@ func (p *DB) Close() error {
 	return nil
 }
 
-func (p *DB) slave() *sql.DB {
-	return p.oriSlaves[0]
+func (p *DB) db(firstSixChar string) *sql.DB {
+	if strings.ToUpper(firstSixChar) == "SELECT" {
+		index := rand.Intn(len(p.oriSlaves))
+		return p.oriSlaves[index]
+	} else {
+		return p.oriMaster
+	}
 }
 
 //if parse to where, there will be a space ahead
