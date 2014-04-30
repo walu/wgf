@@ -12,12 +12,12 @@ sqlutil wrapped \*sql.DB by \*DB
 
 if you have only one db sever:
 
-	var dbConn \*DB
+	var dbConn *DB
 	dbConn = NewDB(db)
 
 if you have master and slave db servers
 
-	var dbConn \*DB
+	var dbConn *DB
 	dbConn = NewRWDB(master, slave1, slave2.....)
 
 ## 2. Query Sqls
@@ -26,13 +26,13 @@ if you have master and slave db servers
 
 Select provides a simple way to do select works.
 
-	//SELECT \* FROM wiki
+	//SELECT * FROM wiki
 	dbConn.Select("wiki")
 
-	//SELECT \* FROM wiki WHERE id = 1
+	//SELECT * FROM wiki WHERE id = 1
 	dbConn.Select("wiki", "id", 1)
 
-	//SELECT \* FROM wiki WHERE id = 1 AND name = wgf
+	//SELECT * FROM wiki WHERE id = 1 AND name = wgf
 	dbConn.Select("wiki", "id", 1, "name", "wgf")
 
 	//I thinks you might want to use map to pass params
@@ -88,7 +88,7 @@ so easy, doesn't it?
 if the methods above can't cover your works(of couse, it's very common),
 you shoule use Query And Exec by youself
 
-	dbConn.Query("SELECT \* FROM wiki WHERE id = ? LIMIT ?, ?", 1, 100, 50)
+	dbConn.Query("SELECT * FROM wiki WHERE id = ? LIMIT ?, ?", 1, 100, 50)
 	dbConn.Exec("UPDATE wiki WHERE id = ? ", 1)
 
 ## 3 Rows
