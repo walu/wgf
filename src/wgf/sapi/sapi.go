@@ -41,6 +41,9 @@ type Sapi struct {
 	//Response Header Status
 	Status int
 
+	//HandlerInfo
+	HandlerInfo interface{}
+
 	//Plugins
 	plugins map[string]interface{}
 
@@ -116,13 +119,17 @@ func (p *Sapi) start(c chan int) error {
 
 	pluginOrders := p.server.PluginOrder
 	for _, name := range pluginOrders {
-		p.pluginRequestInit(name)
+		err = p.pluginRequestInit(name)
+		if nil!=err {
+			p.Logger.Debugf("sapi_request_init_error name[%s] error[%s]", name, err.Error())
+			return err
+		}
 	}
 
 	//execute action
 	action, actionErr := GetAction(p.actionName)
 	if nil != actionErr {
-		p.Logger.Debug("ROUTER[" + p.RequestURI() + "] " + actionErr.Error())
+		p.Logger.Debugf("ROUTER[%s] actionName[%s] error[%s]", p.RequestURI(), p.actionName, actionErr.Error())
 		return actionErr
 	}
 
@@ -152,15 +159,17 @@ func (p *Sapi) start(c chan int) error {
 	return err
 }
 
-func (p *Sapi) pluginRequestInit(name string) {
+func (p *Sapi) pluginRequestInit(name string) error {
 	info, ok := pluginMap[name]
+	var err error 
 	if ok {
 		obj, _ := info.Creater()
 		if nil != info.HookPluginRequestInit {
-			info.HookPluginRequestInit(p, obj)
+			err = info.HookPluginRequestInit(p, obj)
 		}
 		p.plugins[name] = obj
 	}
+	return err
 }
 
 func (p *Sapi) pluginRequestShutdown(name string) {

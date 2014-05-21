@@ -6,6 +6,20 @@ import (
 	"time"
 )
 
+type SocketHandlerInfo struct {
+	KeepAlived bool
+	FirstRequest bool
+	Ext map[string]interface{}
+}
+
+func NewSocketHandlerInfo() *SocketHandlerInfo {
+	return &SocketHandlerInfo {
+		KeepAlived : true,
+		FirstRequest : true,
+		Ext : map[string]interface{}{},
+	}
+}
+
 type SocketServerHandler struct {
 	disabled bool
 
@@ -78,10 +92,10 @@ func (p *SocketServerHandler) serveRequest(conn net.Conn) {
 	defer conn.Close()
 	var err error
 
-	var keepalive bool
-	keepalive = false
+	handlerInfo := NewSocketHandlerInfo()
 
 	for true {
+
 		if p.disabled {
 			break
 		}
@@ -92,18 +106,22 @@ func (p *SocketServerHandler) serveRequest(conn net.Conn) {
 		}
 
 		p.currentChildren++
-		err = p.serveRequestEx(conn)
+		err = p.serveRequestEx(conn, handlerInfo)
 		p.currentChildren--
 
-		if nil!=err || !keepalive {
+		handlerInfo.FirstRequest = false
+		if nil!=err || !handlerInfo.KeepAlived {
+			p.pServer.Logger.Info(err)
 			break
 		}
 	}
 }
 
-func (p *SocketServerHandler) serveRequestEx(conn net.Conn) error {
+func (p *SocketServerHandler) serveRequestEx(conn net.Conn, handlerInfo *SocketHandlerInfo) error {
 	sapi := NewSocketSapi(p.pServer, conn)
 	defer sapi.Close()
+
+	sapi.HandlerInfo = handlerInfo
 
 	var err error
 	c := make(chan int)
