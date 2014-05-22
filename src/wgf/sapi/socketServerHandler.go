@@ -111,7 +111,7 @@ func (p *SocketServerHandler) serveRequest(conn net.Conn) {
 
 		handlerInfo.FirstRequest = false
 		if nil!=err || !handlerInfo.KeepAlived {
-			p.pServer.Logger.Info(err)
+			p.pServer.Logger.Debug(err)
 			break
 		}
 	}
