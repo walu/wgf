@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"runtime"
+	"runtime/pprof"
 
 	"wgf/lib/conf"
 	"wgf/lib/log"
@@ -130,8 +132,21 @@ func (p *Server) Confdir() string {
 3. call ServerShutdown
 */
 func (p *Server) Boot(basedir string, conf *conf.Conf) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	p.basedir = basedir
 	p.Conf = conf
+
+	pprofFile := p.Conf.String("wgf.sapi.pprofFile", "")
+	if "" != pprofFile {
+		file, err := os.OpenFile(pprofFile, os.O_WRONLY|os.O_CREATE, 0777)
+		if nil != err {
+			p.Logger.Warning("open pprof file error ", err)
+		} else {
+			pprof.StartCPUProfile(file)
+			defer pprof.StopCPUProfile()
+		}
+	}
 
 	p.ServerInit()
 	go p.Handler.Serve(p)
