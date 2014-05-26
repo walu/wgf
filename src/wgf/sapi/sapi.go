@@ -101,10 +101,6 @@ func (p *Sapi) RequestURI() string {
 
 func (p *Sapi) start(c chan int) error {
 
-	p.Logger.Debug("sapi_start uri[" + p.RequestURI() + "] ")
-
-	defer func(){c<-1}()
-
 	var err error
 
 	p.actionChannel = make(chan int)
@@ -115,6 +111,7 @@ func (p *Sapi) start(c chan int) error {
 			p.Logger.Warning(r)
 			p.Logger.Print(string(debug.Stack()))
 		}
+		c<-1
 	}()
 
 	pluginOrders := p.server.PluginOrder
