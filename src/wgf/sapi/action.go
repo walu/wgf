@@ -1,8 +1,12 @@
 // Copyright 2014 The Wgf Authors. All rights reserved.
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
-
 package sapi
+
+/*
+测试过静态Action，不过和动态Action相比，性能一样。
+后续去掉了这种机制。
+*/
 
 import (
 	"errors"
@@ -30,7 +34,6 @@ type StaticActionInterface interface {
 
 //存储已注册的action
 var actionMap map[string]func() ActionInterface
-var staticActionMap map[string]StaticActionInterface //only for test
 
 /*
 默认action，用于简化app实现逻辑，app在实现自己的action时，可以直接包含此action。
@@ -80,10 +83,6 @@ func RegisterAction(name string, creater func() ActionInterface) {
 	actionMap[name] = creater
 }
 
-func RegisterStaticAction(name string, obj StaticActionInterface) {
-	staticActionMap[name] = obj
-}
-
 //获取已注册的action
 func GetAction(name string) (action ActionInterface, err error) {
 	creater, ok := actionMap[name]
@@ -99,5 +98,4 @@ func GetAction(name string) (action ActionInterface, err error) {
 
 func init() {
 	actionMap = make(map[string]func() ActionInterface)
-	staticActionMap = make(map[string]StaticActionInterface)
 }

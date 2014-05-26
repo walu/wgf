@@ -135,13 +135,6 @@ func (p *Sapi) start(c chan int) error {
 }
 
 func (p *Sapi) executeAction() {
-	staticAction, ok := staticActionMap[p.actionName]
-	if ok {
-		//static action
-		p.actionChannel <- staticAction.Execute(p)
-		return
-	}
-
 	//dynamic action
 	var err error
 	action, err := GetAction(p.actionName)
