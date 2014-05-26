@@ -24,8 +24,13 @@ type ActionInterface interface {
 	DoPost() error
 }
 
+type StaticActionInterface interface {
+	Execute(pSapi *Sapi) error
+}
+
 //存储已注册的action
 var actionMap map[string]func() ActionInterface
+var staticActionMap map[string]StaticActionInterface //only for test
 
 /*
 默认action，用于简化app实现逻辑，app在实现自己的action时，可以直接包含此action。
@@ -75,6 +80,10 @@ func RegisterAction(name string, creater func() ActionInterface) {
 	actionMap[name] = creater
 }
 
+func RegisterStaticAction(name string, obj StaticActionInterface) {
+	staticActionMap[name] = obj
+}
+
 //获取已注册的action
 func GetAction(name string) (action ActionInterface, err error) {
 	creater, ok := actionMap[name]
@@ -90,4 +99,5 @@ func GetAction(name string) (action ActionInterface, err error) {
 
 func init() {
 	actionMap = make(map[string]func() ActionInterface)
+	staticActionMap = make(map[string]StaticActionInterface)
 }

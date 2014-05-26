@@ -51,7 +51,7 @@ type Sapi struct {
 
 	//about runtime
 	requestChannel chan int
-	actionChannel chan int
+	actionChannel chan error
 }
 
 //Set the actionName
@@ -62,7 +62,7 @@ func (p *Sapi) SetActionName(name string) {
 //中止当前请求，之后的代码不会再执行。但plugin的requestShutdown会执行。
 //建议只在action逻辑中执行。
 func (p *Sapi) ExitRequest() {
-	p.actionChannel <- 1
+	p.actionChannel <- nil
 	runtime.Goexit()
 }
 
@@ -103,7 +103,7 @@ func (p *Sapi) start(c chan int) error {
 
 	var err error
 
-	p.actionChannel = make(chan int)
+	p.actionChannel = make(chan error)
 
 	defer func() {
 		r := recover()
@@ -123,18 +123,30 @@ func (p *Sapi) start(c chan int) error {
 		}
 	}
 
-	//execute action
-	action, actionErr := GetAction(p.actionName)
-	if nil != actionErr {
-		p.Logger.Debugf("ROUTER[%s] actionName[%s] error[%s]", p.RequestURI(), p.actionName, actionErr.Error())
-		return actionErr
+	//execute action, it's will call runtime.Goexit, so fire a new goroutine
+	go p.executeAction()
+	err = <-p.actionChannel
+
+	//request shutdown
+	for i := len(p.server.PluginOrder) - 1; i >= 0; i-- {
+		p.pluginRequestShutdown(p.server.PluginOrder[i])
+	}
+	return err
+}
+
+func (p *Sapi) executeAction() {
+	staticAction, ok := staticActionMap[p.actionName]
+	if ok {
+		//static action
+		p.actionChannel <- staticAction.Execute(p)
+		return
 	}
 
-	action.SetSapi(p)
-
-	//action will be ExitRequest
-	//so open a new thread
-	go func() {
+	//dynamic action
+	var err error
+	action, err := GetAction(p.actionName)
+	if nil == err {
+		action.SetSapi(p)
 		if !action.UseSpecialMethod() {
 			err = action.Execute()
 		} else {
@@ -145,15 +157,8 @@ func (p *Sapi) start(c chan int) error {
 				err = action.DoPost()
 			}
 		}
-		p.actionChannel <- 1
-	}()
-	<-p.actionChannel
-
-	//request shutdown
-	for i := len(p.server.PluginOrder) - 1; i >= 0; i-- {
-		p.pluginRequestShutdown(p.server.PluginOrder[i])
 	}
-	return err
+	p.actionChannel <- err
 }
 
 func (p *Sapi) pluginRequestInit(name string) error {
