@@ -1,3 +1,6 @@
+
+wgf, a wonderful framework in golang.
+
 ## 文档(Documentation)
 
 * [中文](<docs/cn.md>)
