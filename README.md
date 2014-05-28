@@ -6,7 +6,7 @@ wgf, a wonderful framework in golang.
 * [中文](<docs/cn.md>)
 * [English](<docs/en.md>)
 
-# Wgf
+# wgf
 
 > * 源码: http://github.com/walu/wgf
 > * 微博: http://weibo.com/walu
