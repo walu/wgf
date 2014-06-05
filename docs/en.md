@@ -18,7 +18,9 @@ wgf based extension mechanism, for http and websocket server, itself embedded ht
 
 ### 1.1 get wgf
 
-wgf is not a standalone library, it is a part of your project's source code, as same as fmt\net\os\io, and so on. When using wgf, please download to your local disk, and copy to the project, or to add wgf path into GOPATH.
+**wgf is not a standalone library, it is a part of your project's source code, as same as fmt\net\os\io, and so on. **
+
+When using wgf, please download to your local disk, and copy to the project, or to add wgf path into GOPATH.
 
 ```bash
 # Place the code in their own projects under project/src
