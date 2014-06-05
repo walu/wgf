@@ -10,7 +10,7 @@ wgf基于扩展机制，本身也内嵌了httpparam、双向路由、动态模�
 
 ### 1.1 获取wgf
 
-**wgf目前不是library，而是项目工程的一部分，请不要使用go get获取。**
+**wgf目前不是library，而是项目工程源码的一部分，就像fmt\net\os\io这些package一样。**
 
 所以，在使用wgf时候，请自行下载到本地，并copy到项目中，或将wgf目录添加到GOPATH中。
 
