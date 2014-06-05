@@ -4,9 +4,9 @@
 
 Hello，wgf是一款基于Golang的编程框架。目标为提供一个尽可能统一的编程环境，提高工作效率。
 
-目前，wgf已完成对http、cli、socket、websocket的支持，其中socket、websocket的还比较初级。
+目前，wgf已完成对http、cli、socket、websocket的支持。
 
-wgf基于扩展机制，本身也内嵌了httpparam、双向路由、动态模版等扩展，将在此文档中一一介绍。
+wgf基于扩展机制，对于http\websocket两种server类型内嵌了httpparam、双向路由、动态模版等扩展，将在此文档中一一介绍。
 
 ### 1.1 获取wgf
 

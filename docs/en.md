@@ -10,9 +10,9 @@
 
 Hello, wgf is a programming framework based Golang. Objective is to provide a unified programming environment as possible, improve work efficiency. 
 
-Currently, wgf has completed support for http, cli, socket, websocket which socket, websocket is still relatively junior. 
+Currently, wgf has completed support for http, cli, socket, websocket. 
 
-wgf based extension mechanism, itself embedded httpparam, bi-directional routing, dynamic templates and other extensions will be introduced one by one in this document.
+wgf based extension mechanism, for http and websocket server, itself embedded httpparam, bi-directional routing, dynamic templates and other extensions will be introduced one by one in this document.
 
 # 1. Wgf development Remarks
 
