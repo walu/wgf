@@ -8,12 +8,9 @@ Hello，wgf是一款基于Golang的编程框架。目标为提供一个尽可能
 
 wgf基于扩展机制，本身也内嵌了httpparam、双向路由、动态模版等扩展，将在此文档中一一介绍。
 
-### 1.1 wgf暂不支持go get，也没有支持的计划。
+### 1.1 获取wgf
 
-因为：
-
-1. 主要原因：代码import中的github.com/walu/ 之类的前缀就像裹脚布，又臭又长。
-2. 次要原因：没有version控制。
+**wgf目前不是library，而是项目工程的一部分，请不要使用go get获取。**
 
 所以，在使用wgf时候，请自行下载到本地，并copy到项目中，或将wgf目录添加到GOPATH中。
 
@@ -35,6 +32,8 @@ export GOPATH="${GOPATH}:${wgfdir}"
 ```
 
 > 当然，你的操作完全没有必要向上面这么小白，只要最后一行对了就行了。
+
+> 或者，你可以执行`cp -r $wgfdir/wgf $projectdir/src/`
 
 
 ### 1.2 整个wgf框架支持mvc的开发结构
