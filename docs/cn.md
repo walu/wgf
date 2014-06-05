@@ -33,7 +33,7 @@ export GOPATH="${GOPATH}:${wgfdir}"
 
 > 当然，你的操作完全没有必要向上面这么小白，只要最后一行对了就行了。
 
-> 或者，你可以执行`cp -r $wgfdir/wgf $projectdir/src/`
+> 或者，你可以执行`cp -r $wgfdir/src/wgf $projectdir/src/`
 
 
 ### 1.2 整个wgf框架支持mvc的开发结构

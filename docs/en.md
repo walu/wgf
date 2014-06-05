@@ -16,14 +16,9 @@ wgf based extension mechanism, itself embedded httpparam, bi-directional routing
 
 # 1. Wgf development Remarks
 
-### 1.1 wgf not support go get, there is no support plan yet.
+### 1.1 get wgf
 
-Because :
-
-* The main reason : the prefix of importing path github.com/walu/** is long and boring sort.
-* Secondary reason : no version control .
-
-Therefore, when using wgf , please download to a local, and copy to the project, or to add wgf path into GOPATH.
+wgf is not a standalone library, it is a part of your project's source code. When using wgf, please download to your local disk, and copy to the project, or to add wgf path into GOPATH.
 
 ```bash
 # Place the code in their own projects under project/src
@@ -41,7 +36,9 @@ export GOPATH = $(pwd)
 export GOPATH = "${GOPATH}:${wgfdir}"
 ````
 
-Of course , you are not absolutely necessary to the operation of the above so white, so long as the last line on the line.
+> Of course , you are not absolutely necessary to the operation of the above so white, so long as the last line on the line.
+> 
+> you can also do this: `cp -r $wgfdir/src/wgf $projectdir/src`
 
 ### 1.2 supports the development of the structure of the entire wgf mvc framework of
 
