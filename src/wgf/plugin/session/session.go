@@ -62,6 +62,7 @@ func (s *Session) Get(key string) interface{} {
 	return val[key]
 }
 
+//建议只存放String
 func (s *Session) Set(key string, value interface{}) {
 	_, ok := sessionMap[s.id]
 	if !ok {
