@@ -13,7 +13,8 @@ func TestCommonAction(t *testing.T) {
 	val1 = []byte("wgf")
 	sid = "ABCDEFG"
 
-	h := newDefaultHandler(10)
+	h := newDefaultHandler()
+	h.Start()
 
 	//set
 	if false == h.Set(sid, "name", val1) {

@@ -6,8 +6,8 @@ import (
 
 //use default session handler
 func TestSet(t *testing.T) {
+	sessionHandler = newDefaultHandler()
 	ret := &Session{hasStarted: false}
-	ret.h = newDefaultHandler(1200)
 
 	var ok bool
 

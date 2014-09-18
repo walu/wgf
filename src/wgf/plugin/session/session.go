@@ -24,6 +24,8 @@ func uuid() string {
 	return pre + suf
 }
 
+var sessionHandler Handler
+
 type Session struct {
 	sapi       *sapi.Sapi
 	id         string
@@ -56,7 +58,7 @@ func (s *Session) Start() {
 }
 
 func (s *Session) Get(key string, dst interface{}) bool {
-	valInStore, ok := s.h.Get(s.id, key)
+	valInStore, ok := sessionHandler.Get(s.id, key)
 	if false == ok || nil != gob.NewDecoder(bytes.NewReader(valInStore)).Decode(dst) {
 		return false
 	}
@@ -69,21 +71,33 @@ func (s *Session) Set(key string, value interface{}) bool {
 	if nil != gob.NewEncoder(buf).Encode(value) {
 		return false
 	}
-	return s.h.Set(s.id, key, buf.Bytes())
+	return sessionHandler.Set(s.id, key, buf.Bytes())
 }
 
 func (s *Session) Del(key string) bool {
-	return s.h.Del(s.id, key)
+	return sessionHandler.Del(s.id, key)
 }
 
 func (s *Session) Destory() bool {
-	return s.h.Destory(s.id)
+	return sessionHandler.Destory(s.id)
 }
 
 func sessionCreater() (interface{}, error) {
-	ret := &Session{hasStarted: false}
-	ret.h = newDefaultHandler(1200)
-	return ret, nil
+	return &Session{hasStarted: false}, nil
+}
+
+func serverInit(s *sapi.Server) error {
+	if nil != sessionHandler {
+		sessionHandler = newDefaultHandler()
+	}
+	sessionHandler.SetExpireTime(1200)
+	sessionHandler.Start()
+	return nil
+}
+
+func serverShutdown(s *sapi.Server) error {
+	sessionHandler.Stop()
+	return nil
 }
 
 func requestInit(s *sapi.Sapi, p interface{}) error {
@@ -96,6 +110,8 @@ func init() {
 	info := sapi.PluginInfo{}
 	info.Creater = sessionCreater
 	info.HookPluginRequestInit = requestInit
+	info.HookPluginServerInit = serverInit
+	info.HookPluginServerShutdown = serverShutdown
 	info.BasePlugins = []string{"cookie"}
 	(&info).Support(sapi.IdHttp, sapi.IdWebsocket)
 	sapi.RegisterPlugin("session", info)
