@@ -2,15 +2,19 @@ package session
 
 import (
 	"sync"
+	"time"
 )
 
 type Handler interface {
-	Set(key, value string)
-	Get(key string)
+	Set(sid, key string, value []byte) bool
+	Get(sid, key string)  ([]byte, bool)
+	Del(sid, key string) bool
+	Destory(sid string) bool
 }
 
 type defaultHandler struct {
-	data map[string][string][]byte
+	data map[string]map[string][]byte
+	time map[string]time.Time
 	lock *sync.RWMutex
 	ttl int
 }
@@ -18,7 +22,7 @@ type defaultHandler struct {
 func newDefaultHandler(ttl int) *defaultHandler {
 	ret := new(defaultHandler)
 	ret.ttl = ttl
-	ret.data = make(map[string][string][]byte)
+	ret.data = make(map[string]map[string][]byte)
 	ret.lock = new(sync.RWMutex)
 	return ret
 }
@@ -27,26 +31,34 @@ func (h *defaultHandler) Set(session, key string, value []byte) bool {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	ok, _ := h.data[session]
+	_, ok := h.data[session]
 	if !ok {
-		h.data = make(map[string][]byte)
+		h.data[session] = make(map[string][]byte)
 	}
 	h.data[session][key] = value
 	return true
 }
 
-func (h *defaultHandler) Get(session, key string) (ok bool, value []byte) {
+func (h *defaultHandler) Del(session, key string) bool {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
+	delete(h.data[session], key)
+	return true
+}
+
+func (h *defaultHandler) Get(session, key string) (value []byte, ok bool) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
 
-	ok, v := h.data[session]
+	v, ok := h.data[session]
 	if ok {
-		value = v[key]
+		value, ok = v[key]
 	}
 	return
 }
 
-func (h *defaultHandler) Flush(session string) bool {
+func (h *defaultHandler) Destory(session string) bool {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 

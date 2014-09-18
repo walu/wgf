@@ -6,9 +6,11 @@ import (
 	"wgf/plugin/cookie"
 	"wgf/sapi"
 
+	"encoding/gob"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"bytes"
 	"time"
 )
 
@@ -22,12 +24,11 @@ func uuid() string {
 	return pre + suf
 }
 
-var sessionMap map[string]map[string]interface{}
-
 type Session struct {
 	sapi       *sapi.Sapi
 	id         string
 	hasStarted bool
+	h Handler
 }
 
 func (s *Session) Id() string {
@@ -54,33 +55,35 @@ func (s *Session) Start() {
 	s.id = id
 }
 
-func (s *Session) Get(key string) interface{} {
-	val, ok := sessionMap[s.id]
-	if !ok {
-		return ""
+func (s *Session) Get(key string, dst interface{}) bool {
+	valInStore, ok := s.h.Get(s.id, key)
+	if false == ok || nil != gob.NewDecoder(bytes.NewReader(valInStore)).Decode(dst) {
+		return false
 	}
-	return val[key]
+	return true
+
 }
 
-//建议只存放String
-func (s *Session) Set(key string, value interface{}) {
-	_, ok := sessionMap[s.id]
-	if !ok {
-		sessionMap[s.id] = make(map[string]interface{})
+func (s *Session) Set(key string, value interface{}) bool {
+	buf := new(bytes.Buffer)
+	if nil != gob.NewEncoder(buf).Encode(value) {
+		return false
 	}
-	sessionMap[s.id][key] = value
+	return s.h.Set(s.id, key, buf.Bytes())
 }
 
-func (s *Session) Del(key string) {
-	delete(sessionMap[s.id], key)
+func (s *Session) Del(key string) bool {
+	return s.h.Del(s.id, key)
 }
 
-func (s *Session) Destory() {
-	delete(sessionMap, s.id)
+func (s *Session) Destory() bool {
+	return s.h.Destory(s.id)
 }
 
 func sessionCreater() (interface{}, error) {
-	return &Session{hasStarted: false}, nil
+	ret := &Session{hasStarted: false}
+	ret.h = newDefaultHandler(1200)
+	return ret, nil
 }
 
 func requestInit(s *sapi.Sapi, p interface{}) error {
@@ -90,8 +93,6 @@ func requestInit(s *sapi.Sapi, p interface{}) error {
 }
 
 func init() {
-	sessionMap = make(map[string]map[string]interface{})
-
 	info := sapi.PluginInfo{}
 	info.Creater = sessionCreater
 	info.HookPluginRequestInit = requestInit
