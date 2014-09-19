@@ -24,11 +24,15 @@ type sessionTime struct {
 	time time.Time
 }
 
+type sessionValue struct {
+	value map[string][]byte
+	element *list.Element
+}
+
 type defaultHandler struct {
-	data map[string]map[string][]byte
+	data map[string]sessionValue
 
 	//for expire
-	element map[string]*list.Element
 	list *list.List
 	running bool
 	ttl int
@@ -40,10 +44,9 @@ type defaultHandler struct {
 func newDefaultHandler() *defaultHandler {
 	ret := new(defaultHandler)
 	ret.ttl = 1200 //default 1200
-	ret.data = make(map[string]map[string][]byte)
+	ret.data = make(map[string]sessionValue)
 	ret.lock = new(sync.RWMutex)
 	ret.list = list.New()
-	ret.element = make(map[string]*list.Element)
 	return ret
 }
 
@@ -71,7 +74,6 @@ func (h *defaultHandler) expire() {
 			h.lock.Lock()
 			h.list.Remove(e)
 			delete(h.data, st.sid)
-			delete(h.element, st.sid)
 			h.lock.Unlock()
 		}
 		time.Sleep(1*time.Second)
@@ -95,10 +97,14 @@ func (h *defaultHandler) Set(session, key string, value []byte) bool {
 
 	_, ok := h.data[session]
 	if !ok {
-		h.data[session] = make(map[string][]byte)
+		st := sessionTime{session, time.Now()}
+		tmp := sessionValue{}
+		tmp.value = make(map[string][]byte)
+		tmp.element = h.list.PushFront(st)
+		h.data[session] = tmp
 	}
-	h.data[session][key] = value
-	h.refreshElement(session)
+	h.data[session].value[key] = value
+	h.refreshElement(session, true)
 	return true
 }
 
@@ -106,8 +112,11 @@ func (h *defaultHandler) Del(session, key string) bool {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	delete(h.data[session], key)
-	h.refreshElement(session)
+	_, ok := h.data[session]
+	if ok {
+		delete(h.data[session].value, key)
+	}
+	h.refreshElement(session, ok)
 	return true
 }
 
@@ -117,9 +126,9 @@ func (h *defaultHandler) Get(session, key string) (value []byte, ok bool) {
 
 	v, ok := h.data[session]
 	if ok {
-		value, ok = v[key]
-		h.refreshElement(session)
+		value, ok = v.value[key]
 	}
+	h.refreshElement(session, ok)
 	return
 }
 
@@ -127,24 +136,16 @@ func (h *defaultHandler) Destory(session string) bool {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	//delete data
-	delete(h.data, session)
-
-	//free element in expire list
-	v, ok := h.element[session]
+	_, ok := h.data[session]
 	if ok {
-		h.list.Remove(v)
-		delete(h.element, session)
+		h.list.Remove(h.data[session].element)
+		delete(h.data, session)
 	}
 	return true
 }
 
-func (h *defaultHandler) refreshElement(session string) {
-	v, ok := h.element[session]
-	if ok {
-		h.list.MoveToBack(v)
-	} else {
-		val := sessionTime{session, time.Now()}
-		h.element[session] = h.list.PushFront(val)
+func (h *defaultHandler) refreshElement(session string, exists bool) {
+	if exists {
+		h.list.MoveToFront(h.data[session].element)
 	}
 }
