@@ -3,12 +3,13 @@ wgf, a wonderful framework in golang.
 
 ## 文档(Documentation)
 
-* [中文](<docs/cn.md>)
-* [English](<docs/en.md>)
+* [中文](<https://github.com/walu/wgf-docs/blob/master/cn.md>)
+* [English](<https://github.com/walu/wgf-docs/blob/master/en.md>)
 
 # wgf
 
 > * 源码: http://github.com/walu/wgf
+> * 文档: http://github.com/walu/wgf-docs
 > * 微博: http://weibo.com/walu
 
 ## 是什么？
@@ -17,8 +18,6 @@ Hello，[wgf](<http://github.com/walu/wgf>)是基于[Golang](<golang.org>)的的
 
 目前，wgf已完成对http、cli、socket、websocket的支持。
 wgf基于扩展机制，对httpServer内嵌了httpparam、双向路由、动态模版等扩展，将在文档中一一介绍。
-
-> **强烈建议大家先浏览一下app目录源码（一个index＋login事例），即可对wgf有个大体的了解。**
 
 ## 扩展机制
 
@@ -40,14 +39,9 @@ Package dependencies(自上至下):
 
 ## 支持的功能
 
-* mvc
-	* 可以查看源码中的app目录，查看基本的mvc使用。
-* plugin
-	* httpServer的Plugin
-		* httpparam, 获取http请求中的参数，GET、POST、文件上传等。
-		* session (完善中), 处理Session问题。
-		* cookie, 获取、设置Cookie。
-		* header, 获取、设置Header信息、重定向请求等。
-		* router, 根据路由规则分发请求、生成URL等。
-		* view, 管理模版文件，无重启更新模版。
-
+* HttpServer
+	* 完善的MVC分层，支持session、cookie、router、view等plugin，方便快速开发。
+* SocketServer
+	* 通过plugin扩展协议，支持keepalive等属性。
+* CliServer
+* WebsocketServer[试验]
