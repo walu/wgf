@@ -17,7 +17,6 @@ const (
 	USE_DOFUNC  = 1
 )
 
-//wgf使用的action-interface
 type ActionInterface interface {
 	SetSapi(p *Sapi)
 
