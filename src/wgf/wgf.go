@@ -13,9 +13,6 @@ import (
 	"wgf/lib/conf"
 	"wgf/sapi"
 
-	//for test only.
-	//"runtime/pprof"
-
 	//load all core plugins
 	_ "wgf/plugin/cookie"
 	_ "wgf/plugin/header"
