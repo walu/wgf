@@ -1,4 +1,7 @@
 
+## 废弃
+
+
 wgf, a wonderful framework in golang.
 
 ## 文档(Documentation)
